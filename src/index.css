@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-edutrust-primary: #2B59FF;
+  --color-edutrust-primary-hover: #1E47E0;
+  --color-edutrust-primary-deep: #003FDD;
+  --color-edutrust-secondary: #12B76A;
+  --color-edutrust-secondary-hover: #0E9F5A;
+  --color-edutrust-tertiary: #F79009;
+  --color-edutrust-ink: #0F172A;
+  --color-edutrust-surface: #FAF8FF;
+  --color-edutrust-canvas: #F8FAFC;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    background-color: #F8FAFC;
+    color: #0F172A;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background-color: #F8FAFC;
+    color: #0F172A;
+    overflow-x: hidden;
+  }
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+.card-ambient {
+  background-color: #FFFFFF;
+  border-radius: 1rem;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: 0px 1px 3px rgba(16, 24, 40, 0.05), 0px 4px 16px rgba(16, 24, 40, 0.04);
+}
+
+.card-ambient-hover {
+  transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-ambient-hover:hover {
+  box-shadow: 0px 4px 6px rgba(16, 24, 40, 0.04), 0px 12px 24px -4px rgba(43, 89, 255, 0.08);
+}
+
+.wallet-gradient {
+  background: linear-gradient(135deg, #2B59FF 0%, #1539C2 100%);
+}
+
+@keyframes edutrustPush {
+  from {
+    opacity: 0;
+    transform: translate3d(24px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes edutrustPushBack {
+  from {
+    opacity: 0;
+    transform: translate3d(-24px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes edutrustSlideUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 28px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.transition-push {
+  animation: edutrustPush 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.transition-push_back {
+  animation: edutrustPushBack 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.transition-slide_up {
+  animation: edutrustSlideUp 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.transition-none {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
