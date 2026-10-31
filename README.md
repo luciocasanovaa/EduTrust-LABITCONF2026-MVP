@@ -53,6 +53,7 @@ src/
 ```bash
 npm install
 cp .env.example .env.local   # completar GEMINI_API_KEY si se usa Gemini
+```
 npm run dev                  # http://localhost:3000
 
 > **Si `npm install` falla por conflictos de dependencias** (error `ERESOLVE`), instalá con:
