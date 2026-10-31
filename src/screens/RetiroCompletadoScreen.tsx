@@ -1,18 +1,23 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Check, CheckCircle2, Copy } from 'lucide-react';
-import { WithdrawalReceipt } from '../types/edutrust';
+import { AppHeader } from '../components/AppHeader';
+import { RoleNavItem, WithdrawalReceipt } from '../types/edutrust';
 import { NavigationTrigger } from '../utils/edutrustLogic';
 
 interface RetiroCompletadoScreenProps {
   receipt: WithdrawalReceipt;
   remainingBalanceUsdt: number;
   onNavigateTrigger: (trigger: NavigationTrigger) => void;
+  onSelectNav: (item: RoleNavItem) => void;
+  onLogout: () => void;
 }
 
 export function RetiroCompletadoScreen({
   receipt,
   remainingBalanceUsdt,
   onNavigateTrigger,
+  onSelectNav,
+  onLogout,
 }: RetiroCompletadoScreenProps) {
   const [copied, setCopied] = useState(false);
 
@@ -26,19 +31,12 @@ export function RetiroCompletadoScreen({
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex flex-col">
-      <header className="w-full bg-white border-b border-slate-200/80">
-        <div className="max-w-[720px] mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
-          <span className="text-base font-bold tracking-tight text-[#0F172A] flex items-center gap-2">
-            <span className="w-7 h-7 rounded-lg bg-[#2B59FF] text-white flex items-center justify-center text-xs font-bold">
-              ET
-            </span>
-            <span>EduTrust Fintech</span>
-          </span>
-          <span className="text-xs font-medium text-[#027A48] bg-[#ECFDF3] border border-[#A6F4C5] px-3 py-1 rounded-full">
-            Liquidación acreditada
-          </span>
-        </div>
-      </header>
+      <AppHeader
+        role="alumno"
+        activeNavId="mi-beca"
+        onSelectNav={onSelectNav}
+        onLogout={onLogout}
+      />
 
       <main className="flex-1 flex items-center justify-center px-4 py-8 md:py-12">
         <div className="max-w-[540px] w-full card-ambient p-6 sm:p-8">

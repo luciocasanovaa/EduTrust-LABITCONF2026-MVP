@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Building2, Check, Plus, ShieldCheck, X } from 'lucide-react';
 import { ARS_EXCHANGE_RATE } from '../data/seedData';
-import { BankAccount } from '../types/edutrust';
+import { AppHeader } from '../components/AppHeader';
+import { BankAccount, RoleNavItem } from '../types/edutrust';
 import { NavigationTrigger, validateWithdrawal } from '../utils/edutrustLogic';
 
 interface RetirarCuentaScreenProps {
@@ -10,6 +11,8 @@ interface RetirarCuentaScreenProps {
   onAddAccount: (account: BankAccount) => void;
   onConfirmWithdrawal: (amountUsdt: number, account: BankAccount) => void;
   onNavigateTrigger: (trigger: NavigationTrigger) => void;
+  onSelectNav: (item: RoleNavItem) => void;
+  onLogout: () => void;
 }
 
 export function RetirarCuentaScreen({
@@ -18,6 +21,8 @@ export function RetirarCuentaScreen({
   onAddAccount,
   onConfirmWithdrawal,
   onNavigateTrigger,
+  onSelectNav,
+  onLogout,
 }: RetirarCuentaScreenProps) {
   const defaultWithdraw =
     availableUsdt >= 150
@@ -78,36 +83,41 @@ export function RetirarCuentaScreen({
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex flex-col">
-      {/* Exact XPath Header: //header//button[@aria-label='Back'] and //button[@id='modal-close'] */}
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80">
-        <div className="max-w-[960px] mx-auto px-4 md:px-8 h-16 flex items-center justify-between gap-4">
+      <AppHeader
+        role="alumno"
+        activeNavId="mi-beca"
+        onSelectNav={onSelectNav}
+        onLogout={onLogout}
+      />
+
+      <main className="flex-1 max-w-[960px] w-full mx-auto px-4 md:px-8 py-6 md:py-10">
+        {/* Where am I / how do I leave this step */}
+        <div className="flex items-center justify-between gap-4 mb-2">
           <button
             type="button"
             aria-label="Back"
             onClick={() => onNavigateTrigger('header-back')}
-            className="min-h-[44px] min-w-[44px] px-3 rounded-lg hover:bg-slate-100 text-[#0F172A] flex items-center gap-2 text-sm font-medium transition-colors cursor-pointer shrink-0"
+            className="min-h-[44px] -ml-3 px-3 rounded-lg hover:bg-slate-100 text-[#0F172A] flex items-center gap-2 text-sm font-medium transition-colors cursor-pointer shrink-0"
           >
             <ArrowLeft className="w-5 h-5" aria-hidden="true" />
-            <span className="hidden sm:inline">Volver a Mi beca</span>
+            <span>Volver a Mi beca</span>
           </button>
-
-          <h1 className="text-base md:text-lg font-semibold text-[#0F172A] truncate">
-            Retirar a mi cuenta
-          </h1>
 
           <button
             id="modal-close"
             type="button"
             aria-label="Cerrar ventana de retiro"
             onClick={() => onNavigateTrigger('modal-close')}
-            className="min-h-[44px] min-w-[44px] rounded-lg hover:bg-slate-100 text-[#475467] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer shrink-0"
+            className="min-h-[44px] min-w-[44px] -mr-3 rounded-lg hover:bg-slate-100 text-[#475467] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer shrink-0"
           >
             <X className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
-      </header>
 
-      <main className="flex-1 max-w-[960px] w-full mx-auto px-4 md:px-8 py-6 md:py-10">
+        <h1 className="text-2xl md:text-[28px] font-semibold text-[#0F172A] tracking-tight mb-6">
+          Retirar a mi cuenta
+        </h1>
+
         <form onSubmit={handleConfirm} className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start" noValidate>
           {/* Left Column: Amount & Destination Account */}
           <div className="lg:col-span-7 space-y-6">

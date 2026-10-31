@@ -20,10 +20,43 @@ import {
   resolveInitialScreenFromSearch,
   resolveInitialSessionFromSearch,
   resolveNavigation,
+  ROLE_ALLOWED_SCREENS,
+  ROLE_HOME_SCREEN,
+  ROLE_NAV_ITEMS,
   validateAndCreateDonation,
   validateAndSubmitCourseGrade,
   validateWithdrawal,
 } from './edutrustLogic';
+
+test('header tabs are consistent per role: unique, allowed, and reach every page', () => {
+  const roles = ['alumno', 'patrocinador', 'institucion'] as const;
+  for (const role of roles) {
+    const items = ROLE_NAV_ITEMS[role];
+    assert.equal(new Set(items.map((i) => i.id)).size, items.length, `${role}: unique tab ids`);
+    assert.equal(new Set(items.map((i) => i.label)).size, items.length, `${role}: unique labels`);
+    for (const item of items) {
+      assert.equal(canRoleAccessScreen(role, item.screen), true, `${role}/${item.id} allowed`);
+    }
+    // The role's landing page is reachable from the tabs...
+    assert.ok(items.some((i) => i.screen === ROLE_HOME_SCREEN[role]), `${role}: home has a tab`);
+  }
+
+  // ...and every page of patrocinador/institucion has its own tab (alumno's
+  // withdrawal flow pages hang under "Mi beca").
+  for (const role of ['patrocinador', 'institucion'] as const) {
+    for (const screen of ROLE_ALLOWED_SCREENS[role]) {
+      assert.ok(ROLE_NAV_ITEMS[role].some((i) => i.screen === screen), `${role}: tab for ${screen}`);
+    }
+  }
+  assert.deepEqual(
+    ROLE_NAV_ITEMS.patrocinador.map((i) => i.label),
+    ['Donaciones', 'Auditoría', 'Talento'],
+  );
+  assert.deepEqual(
+    ROLE_NAV_ITEMS.alumno.map((i) => i.label),
+    ['Mi beca', 'Perfil', 'Ofertas'],
+  );
+});
 
 test('prototype navigation spec covers all 18 required edges and transitions', () => {
   assert.deepEqual(resolveNavigation(ScreenId.IngresoEstudiantes, 'btn-google-auth'), {

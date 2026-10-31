@@ -1,22 +1,14 @@
 import React, { useState } from 'react';
-import {
-  ArrowUpRight,
-  CheckCircle2,
-  FileSpreadsheet,
-  Landmark,
-  LogOut,
-  PlusCircle,
-  ShieldCheck,
-} from 'lucide-react';
-import { DonationRecord, DonorCategory, ScreenId } from '../types/edutrust';
-import { NavigationTrigger, validateAndCreateDonation } from '../utils/edutrustLogic';
+import { CheckCircle2, PlusCircle, ShieldCheck } from 'lucide-react';
+import { AppHeader } from '../components/AppHeader';
+import { DonationRecord, DonorCategory, RoleNavItem } from '../types/edutrust';
+import { validateAndCreateDonation } from '../utils/edutrustLogic';
 
 interface RecepcionDonacionesScreenProps {
   donations: DonationRecord[];
   allocatedEngineeringUsdt: number;
   onRegisterDonation: (record: DonationRecord) => void;
-  onNavigateTrigger: (trigger: NavigationTrigger) => void;
-  onDonorScreenSelect: (screen: ScreenId) => void;
+  onSelectNav: (item: RoleNavItem) => void;
   onLogout: () => void;
 }
 
@@ -24,8 +16,7 @@ export function RecepcionDonacionesScreen({
   donations,
   allocatedEngineeringUsdt,
   onRegisterDonation,
-  onNavigateTrigger,
-  onDonorScreenSelect,
+  onSelectNav,
   onLogout,
 }: RecepcionDonacionesScreenProps) {
   const [donorName, setDonorName] = useState('');
@@ -66,73 +57,18 @@ export function RecepcionDonacionesScreen({
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex flex-col">
-      {/* Top Bar Contract with exact //nav//a[@data-path='programas-y-becas'] */}
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80">
-        <div className="max-w-[1360px] mx-auto px-4 md:px-8 h-16 flex items-center justify-between gap-4 md:gap-8">
-          <a
-            href="#recepcion-donaciones"
-            onClick={(e) => e.preventDefault()}
-            className="text-base md:text-lg font-bold tracking-tight text-[#0F172A] whitespace-nowrap shrink-0 flex items-center gap-2"
-          >
-            <span className="w-7 h-7 rounded-lg bg-[#2B59FF] text-white flex items-center justify-center text-xs font-bold">
-              ET
-            </span>
-            <span>EduTrust Patrocinadores</span>
-          </a>
+      <AppHeader
+        role="patrocinador"
+        activeNavId="donaciones"
+        onSelectNav={onSelectNav}
+        onLogout={onLogout}
+      />
 
-          <nav
-            aria-label="Navegación Entidad Receptora"
-            className="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm font-medium text-[#475467]"
-          >
-            <a
-              href="#recepcion"
-              onClick={(e) => e.preventDefault()}
-              aria-current="page"
-              className="text-[#2B59FF] font-semibold border-b-2 border-[#2B59FF] py-5 whitespace-nowrap shrink-0"
-            >
-              Recepción y Donaciones
-            </a>
-            <a
-              href="#programas-y-becas"
-              data-path="programas-y-becas"
-              onClick={(e) => {
-                e.preventDefault();
-                onNavigateTrigger('nav-programas-y-becas');
-              }}
-              className="hover:text-[#0F172A] transition-colors py-5 whitespace-nowrap shrink-0"
-            >
-              Programas y Becas
-            </a>
-            <a
-              href="#portal-empresas"
-              onClick={(e) => {
-                e.preventDefault();
-                onDonorScreenSelect(ScreenId.BusquedaTalento);
-              }}
-              className="hover:text-[#0F172A] transition-colors py-5 whitespace-nowrap shrink-0"
-            >
-              Talento Becado
-            </a>
-          </nav>
-
-          <div className="flex items-center shrink-0">
-            <button
-              type="button"
-              onClick={onLogout}
-              className="px-3.5 py-2 rounded-lg bg-[#F8FAFC] hover:bg-slate-100 border border-slate-200 text-xs font-semibold text-[#0F172A] flex items-center gap-1.5 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-            >
-              <LogOut className="w-3.5 h-3.5 text-[#475467]" aria-hidden="true" />
-              <span>Cambiar perfil</span>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Workspace Body: Visible <aside> + <main> */}
+      {/* Workspace Body: context <aside> + <main> */}
       <div className="flex-1 max-w-[1360px] w-full mx-auto px-4 md:px-8 py-6 md:py-8 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
-        {/* Sidebar (<aside> with exact //aside//a[@data-path='asignacion-a-programas']) */}
+        {/* Sidebar: context only. Navigation lives in the header. */}
         <aside
-          aria-label="Menú de tesorería y bóveda"
+          aria-label="Entidad fiduciaria y bóveda"
           className="lg:col-span-3 card-ambient p-4 space-y-4"
         >
           <div className="px-2 pt-1">
@@ -146,34 +82,6 @@ export function RecepcionDonacionesScreen({
               Custodia institucional auditada 1:1
             </p>
           </div>
-
-          <ul className="space-y-1 text-sm">
-            <li>
-              <a
-                href="#boveda-recepcion"
-                onClick={(e) => e.preventDefault()}
-                className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-[#EFF4FF] text-[#2B59FF] font-semibold"
-              >
-                <Landmark className="w-4 h-4 shrink-0" aria-hidden="true" />
-                <span>Recepción y Donaciones</span>
-              </a>
-            </li>
-            <li>
-              <a
-                href="#asignacion-a-programas"
-                data-path="asignacion-a-programas"
-                onClick={(e) => {
-                  e.preventDefault();
-                  onNavigateTrigger('aside-asignacion-a-programas');
-                }}
-                className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[#475467] hover:bg-slate-50 hover:text-[#0F172A] font-medium transition-colors"
-              >
-                <FileSpreadsheet className="w-4 h-4 shrink-0" aria-hidden="true" />
-                <span>Asignación a Programas</span>
-                <ArrowUpRight className="w-3.5 h-3.5 ml-auto text-[#64748B]" aria-hidden="true" />
-              </a>
-            </li>
-          </ul>
 
           <div className="pt-3 border-t border-slate-100 px-2 text-xs text-[#475467] space-y-1.5">
             <p className="flex items-center gap-1.5 font-medium text-[#0F172A]">

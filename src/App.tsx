@@ -24,6 +24,8 @@ import {
   BankAccount,
   DonationRecord,
   InstitutionEnrollment,
+  ProfileSection,
+  RoleNavItem,
   ScreenId,
   TransitionType,
   UserRole,
@@ -59,7 +61,7 @@ export default function App() {
   const [activeRole, setActiveRole] = useState<UserRole | null>(initialSession.role);
   const [currentScreen, setCurrentScreen] = useState<ScreenId>(initialSession.screen);
   const [transitionType, setTransitionType] = useState<TransitionType>(TransitionType.None);
-  const [profileSection, setProfileSection] = useState<'perfil' | 'ofertas'>('perfil');
+  const [profileSection, setProfileSection] = useState<ProfileSection>('perfil');
 
   // Student Wallet & Academic State
   const [studentProfile, setStudentProfile] = useState(INITIAL_STUDENT_PROFILE);
@@ -126,10 +128,16 @@ export default function App() {
     setCurrentScreen(resolution.nextScreen);
   };
 
-  const handleRoleGuardedScreenSelect = (nextScreen: ScreenId) => {
-    if (!canRoleAccessScreen(activeRole, nextScreen)) return;
-    setTransitionType(TransitionType.Push);
-    setCurrentScreen(nextScreen);
+  // Header tabs: same behaviour from every page of the role, no slide animation.
+  const handleSelectNav = (item: RoleNavItem) => {
+    if (!canRoleAccessScreen(activeRole, item.screen)) return;
+    if (item.profileSection) {
+      setProfileSection(item.profileSection);
+    }
+    if (item.screen !== currentScreen) {
+      setTransitionType(TransitionType.None);
+      setCurrentScreen(item.screen);
+    }
   };
 
   // Student Quick Withdraw on Mi beca (#btn-confirmar-retiro)
@@ -218,6 +226,7 @@ export default function App() {
             transactions={wallet.transactions}
             primaryAccount={bankAccounts[0]}
             onNavigateTrigger={handleNavigateTrigger}
+            onSelectNav={handleSelectNav}
             onQuickWithdrawConfirm={handleQuickWithdrawConfirm}
             onLogout={handleLogout}
           />
@@ -230,6 +239,8 @@ export default function App() {
             onAddAccount={(acc) => setBankAccounts((prev) => [...prev, acc])}
             onConfirmWithdrawal={handleFullWithdrawConfirm}
             onNavigateTrigger={handleNavigateTrigger}
+            onSelectNav={handleSelectNav}
+            onLogout={handleLogout}
           />
         )}
 
@@ -238,6 +249,8 @@ export default function App() {
             receipt={latestReceipt}
             remainingBalanceUsdt={wallet.availableUsdt}
             onNavigateTrigger={handleNavigateTrigger}
+            onSelectNav={handleSelectNav}
+            onLogout={handleLogout}
           />
         )}
 
@@ -246,7 +259,7 @@ export default function App() {
             profile={studentProfile}
             courses={courses}
             offers={jobOffers}
-            initialSection={profileSection}
+            section={profileSection}
             onToggleRecruiterVisible={() =>
               setStudentProfile((prev) => ({
                 ...prev,
@@ -264,7 +277,7 @@ export default function App() {
                 prev.map((o) => (o.id === offerId ? { ...o, applied: true } : o)),
               )
             }
-            onNavigateTrigger={handleNavigateTrigger}
+            onSelectNav={handleSelectNav}
             onLogout={handleLogout}
           />
         )}
@@ -274,7 +287,7 @@ export default function App() {
             milestones={auditMilestones}
             allocatedVaultUsdt={allocatedEngineeringUsdt}
             disbursedTotalUsdt={disbursedTotalUsdt}
-            onNavigateTrigger={handleNavigateTrigger}
+            onSelectNav={handleSelectNav}
             onLogout={handleLogout}
           />
         )}
@@ -292,7 +305,7 @@ export default function App() {
                 prev.map((c) => (c.id === id ? { ...c, contacted: true } : c)),
               )
             }
-            onNavigateTrigger={handleNavigateTrigger}
+            onSelectNav={handleSelectNav}
             onLogout={handleLogout}
           />
         )}
@@ -302,8 +315,7 @@ export default function App() {
             donations={donations}
             allocatedEngineeringUsdt={allocatedEngineeringUsdt}
             onRegisterDonation={handleRegisterDonation}
-            onNavigateTrigger={handleNavigateTrigger}
-            onDonorScreenSelect={handleRoleGuardedScreenSelect}
+            onSelectNav={handleSelectNav}
             onLogout={handleLogout}
           />
         )}

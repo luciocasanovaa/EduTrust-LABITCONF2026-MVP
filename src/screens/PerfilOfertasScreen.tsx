@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Award,
   Briefcase,
   CheckCircle2,
   ExternalLink,
   GraduationCap,
-  LogOut,
   MapPin,
   Plus,
   Search,
   Send,
 } from 'lucide-react';
-import { CourseRecord, JobOffer } from '../types/edutrust';
-import { calculateAcademicSummary, NavigationTrigger } from '../utils/edutrustLogic';
+import { AppHeader } from '../components/AppHeader';
+import { CourseRecord, JobOffer, ProfileSection, RoleNavItem } from '../types/edutrust';
+import { calculateAcademicSummary } from '../utils/edutrustLogic';
 
 interface StudentProfileData {
   fullName: string;
@@ -33,11 +33,12 @@ interface PerfilOfertasScreenProps {
   profile: StudentProfileData;
   courses: CourseRecord[];
   offers: JobOffer[];
-  initialSection: 'perfil' | 'ofertas';
+  /** Which of the two header tabs ("Perfil" / "Ofertas") is open. */
+  section: ProfileSection;
   onToggleRecruiterVisible: () => void;
   onAddSkill: (skill: string) => void;
   onApplyOffer: (offerId: string) => void;
-  onNavigateTrigger: (trigger: NavigationTrigger) => void;
+  onSelectNav: (item: RoleNavItem) => void;
   onLogout: () => void;
 }
 
@@ -45,24 +46,17 @@ export function PerfilOfertasScreen({
   profile,
   courses,
   offers,
-  initialSection,
+  section,
   onToggleRecruiterVisible,
   onAddSkill,
   onApplyOffer,
-  onNavigateTrigger,
+  onSelectNav,
   onLogout,
 }: PerfilOfertasScreenProps) {
-  const [activeTab, setActiveTab] = useState<'todo' | 'perfil' | 'ofertas'>(
-    initialSection === 'ofertas' ? 'ofertas' : 'todo',
-  );
   const [modalityFilter, setModalityFilter] = useState<'Todas' | 'Remoto' | 'Híbrido'>('Todas');
   const [offerQuery, setOfferQuery] = useState('');
   const [newSkill, setNewSkill] = useState('');
   const [skillError, setSkillError] = useState<string | null>(null);
-
-  useEffect(() => {
-    setActiveTab(initialSection === 'ofertas' ? 'ofertas' : 'todo');
-  }, [initialSection]);
 
   const summary = calculateAcademicSummary(courses);
 
@@ -95,131 +89,28 @@ export function PerfilOfertasScreen({
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex flex-col">
-      {/* Top Bar Contract with exact //nav//a[@data-path='mi-beca'] */}
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80">
-        <div className="max-w-[1200px] mx-auto px-4 md:px-8 h-16 flex items-center justify-between gap-4 md:gap-8">
-          <a
-            href="#mi-beca"
-            onClick={(e) => {
-              e.preventDefault();
-              onNavigateTrigger('nav-mi-beca');
-            }}
-            className="text-base md:text-lg font-bold tracking-tight text-[#0F172A] whitespace-nowrap shrink-0 flex items-center gap-2"
-          >
-            <span className="w-7 h-7 rounded-lg bg-[#2B59FF] text-white flex items-center justify-center text-xs font-bold">
-              ET
-            </span>
-            <span className="hidden sm:inline">EduTrust</span>
-          </a>
-
-          <nav
-            aria-label="Navegación de perfil y oportunidades"
-            className="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm font-medium text-[#475467] overflow-x-auto"
-          >
-            <a
-              href="#mi-beca"
-              data-path="mi-beca"
-              onClick={(e) => {
-                e.preventDefault();
-                onNavigateTrigger('nav-mi-beca');
-              }}
-              className="hover:text-[#0F172A] transition-colors py-5 whitespace-nowrap shrink-0"
-            >
-              Mi beca
-            </a>
-            <a
-              href="#perfil-profesional"
-              onClick={(e) => {
-                e.preventDefault();
-                setActiveTab('todo');
-              }}
-              aria-current={activeTab !== 'ofertas' ? 'page' : undefined}
-              className={`py-5 whitespace-nowrap shrink-0 transition-colors ${
-                activeTab !== 'ofertas'
-                  ? 'text-[#2B59FF] font-semibold border-b-2 border-[#2B59FF]'
-                  : 'hover:text-[#0F172A]'
-              }`}
-            >
-              Perfil Profesional
-            </a>
-            <a
-              href="#ofertas-laborales"
-              onClick={(e) => {
-                e.preventDefault();
-                setActiveTab('ofertas');
-              }}
-              aria-current={activeTab === 'ofertas' ? 'page' : undefined}
-              className={`py-5 whitespace-nowrap shrink-0 transition-colors ${
-                activeTab === 'ofertas'
-                  ? 'text-[#2B59FF] font-semibold border-b-2 border-[#2B59FF]'
-                  : 'hover:text-[#0F172A]'
-              }`}
-            >
-              Ofertas ({offers.length})
-            </a>
-          </nav>
-
-          <div className="flex items-center shrink-0">
-            <button
-              type="button"
-              onClick={onLogout}
-              className="px-3 py-1.5 text-xs font-semibold text-[#475467] hover:text-[#0F172A] bg-[#F8FAFC] border border-slate-200 rounded-lg flex items-center gap-1.5 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-            >
-              <LogOut className="w-3.5 h-3.5" aria-hidden="true" />
-              <span>Cambiar perfil</span>
-            </button>
-          </div>
-        </div>
-      </header>
+      <AppHeader
+        role="alumno"
+        activeNavId={section}
+        onSelectNav={onSelectNav}
+        onLogout={onLogout}
+      />
 
       <main className="flex-1 max-w-[1200px] w-full mx-auto px-4 md:px-8 py-6 md:py-8">
-        {/* Page Header + Segmented View Selector */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <div>
-            <p className="text-xs font-medium text-[#475467]">
-              Credencial Académica Verificada · Red de Empleabilidad STEM
-            </p>
-            <h1 className="text-2xl md:text-[28px] font-semibold text-[#0F172A] tracking-tight mt-0.5">
-              Perfil Profesional y Ofertas
-            </h1>
-          </div>
-
-          <div
-            role="group"
-            aria-label="Cambiar vista de perfil y ofertas"
-            className="inline-flex items-center gap-1 p-1 bg-slate-100 rounded-lg self-start"
-          >
-            {(
-              [
-                { id: 'todo', label: 'Vista completa' },
-                { id: 'perfil', label: 'CV Académico' },
-                { id: 'ofertas', label: 'Ofertas laborales' },
-              ] as const
-            ).map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setActiveTab(item.id)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                  activeTab === item.id
-                    ? 'bg-white text-[#0F172A] shadow-xs font-semibold'
-                    : 'text-[#475467] hover:text-[#0F172A]'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
+        {/* Page Header: follows the tab chosen in the header */}
+        <div className="mb-6">
+          <p className="text-xs font-medium text-[#475467]">
+            Credencial Académica Verificada · Red de Empleabilidad STEM
+          </p>
+          <h1 className="text-2xl md:text-[28px] font-semibold text-[#0F172A] tracking-tight mt-0.5">
+            {section === 'perfil' ? 'Perfil Profesional' : 'Ofertas laborales'}
+          </h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Column: Verified Academic Profile */}
-          {activeTab !== 'ofertas' && (
-            <section
-              className={
-                activeTab === 'perfil' ? 'lg:col-span-12 space-y-6' : 'lg:col-span-5 space-y-6'
-              }
-            >
+          {/* Perfil: Verified Academic Profile */}
+          {section === 'perfil' && (
+            <section className="lg:col-span-12 max-w-3xl w-full space-y-6">
               <div className="card-ambient p-6">
                 <div className="flex items-start justify-between gap-4 mb-4">
                   <div className="flex items-center gap-3.5">
@@ -352,13 +243,9 @@ export function PerfilOfertasScreen({
             </section>
           )}
 
-          {/* Right Column: Partner Job & Internship Offers */}
-          {activeTab !== 'perfil' && (
-            <section
-              className={
-                activeTab === 'ofertas' ? 'lg:col-span-12 space-y-4' : 'lg:col-span-7 space-y-4'
-              }
-            >
+          {/* Ofertas: Partner Job & Internship Offers */}
+          {section === 'ofertas' && (
+            <section className="lg:col-span-12 space-y-4">
               <div className="card-ambient p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="relative flex-1">
                   <Search

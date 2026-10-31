@@ -8,6 +8,7 @@ import {
   DonorCategory,
   InstitutionEnrollment,
   NavigationResolution,
+  RoleNavItem,
   ScreenId,
   StudentCandidate,
   TransactionRecord,
@@ -37,6 +38,36 @@ export const ROLE_ALLOWED_SCREENS: Record<UserRole, readonly ScreenId[]> = {
     ScreenId.BusquedaTalento,
   ],
   institucion: [ScreenId.PortalInstitucion],
+};
+
+/**
+ * Header tabs per role. Same labels, same order and same position on every
+ * page of the role, so the navigation never changes while the user moves around.
+ */
+export const ROLE_NAV_ITEMS: Record<UserRole, readonly RoleNavItem[]> = {
+  alumno: [
+    { id: 'mi-beca', label: 'Mi beca', screen: ScreenId.MiBeca },
+    {
+      id: 'perfil',
+      label: 'Perfil',
+      screen: ScreenId.PerfilProfesional,
+      profileSection: 'perfil',
+    },
+    {
+      id: 'ofertas',
+      label: 'Ofertas',
+      screen: ScreenId.PerfilProfesional,
+      profileSection: 'ofertas',
+    },
+  ],
+  patrocinador: [
+    { id: 'donaciones', label: 'Donaciones', screen: ScreenId.RecepcionDonaciones },
+    { id: 'auditoria', label: 'Auditoría', screen: ScreenId.PanelAuditoria },
+    { id: 'talento', label: 'Talento', screen: ScreenId.BusquedaTalento },
+  ],
+  institucion: [
+    { id: 'carga-de-notas', label: 'Carga de notas', screen: ScreenId.PortalInstitucion },
+  ],
 };
 
 export function canRoleAccessScreen(

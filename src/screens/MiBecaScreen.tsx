@@ -5,14 +5,15 @@ import {
   BookOpenCheck,
   Building2,
   Clock,
-  LogOut,
   Wallet,
 } from 'lucide-react';
+import { AppHeader } from '../components/AppHeader';
 import { ARS_EXCHANGE_RATE } from '../data/seedData';
 import {
   BankAccount,
   CourseRecord,
   CourseStatus,
+  RoleNavItem,
   TransactionRecord,
 } from '../types/edutrust';
 import {
@@ -29,6 +30,7 @@ interface MiBecaScreenProps {
   transactions: TransactionRecord[];
   primaryAccount: BankAccount;
   onNavigateTrigger: (trigger: NavigationTrigger) => void;
+  onSelectNav: (item: RoleNavItem) => void;
   onQuickWithdrawConfirm: (amountUsdt: number) => void;
   onLogout: () => void;
 }
@@ -42,6 +44,7 @@ export function MiBecaScreen({
   transactions,
   primaryAccount,
   onNavigateTrigger,
+  onSelectNav,
   onQuickWithdrawConfirm,
   onLogout,
 }: MiBecaScreenProps) {
@@ -65,69 +68,12 @@ export function MiBecaScreen({
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex flex-col">
-      {/* Top Bar Contract: Single unified visible <nav> across mobile & desktop */}
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80">
-        <div className="max-w-[1200px] mx-auto px-4 md:px-8 h-16 flex items-center justify-between gap-4 md:gap-8">
-          <a
-            href="#mi-beca"
-            onClick={(e) => e.preventDefault()}
-            className="text-base md:text-lg font-bold tracking-tight text-[#0F172A] whitespace-nowrap shrink-0 flex items-center gap-2"
-          >
-            <span className="w-7 h-7 rounded-lg bg-[#2B59FF] text-white flex items-center justify-center text-xs font-bold">
-              ET
-            </span>
-            <span className="hidden sm:inline">EduTrust</span>
-          </a>
-
-          <nav
-            aria-label="Navegación principal del becario"
-            className="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm font-medium text-[#475467]"
-          >
-            <a
-              href="#mi-beca"
-              data-path="mi-beca"
-              onClick={(e) => e.preventDefault()}
-              aria-current="page"
-              className="text-[#2B59FF] font-semibold border-b-2 border-[#2B59FF] py-5 whitespace-nowrap shrink-0"
-            >
-              Mi beca
-            </a>
-            <a
-              href="#perfil"
-              data-path="perfil"
-              onClick={(e) => {
-                e.preventDefault();
-                onNavigateTrigger('nav-perfil');
-              }}
-              className="hover:text-[#0F172A] transition-colors py-5 whitespace-nowrap shrink-0"
-            >
-              Perfil
-            </a>
-            <a
-              href="#ofertas"
-              data-path="ofertas"
-              onClick={(e) => {
-                e.preventDefault();
-                onNavigateTrigger('nav-ofertas');
-              }}
-              className="hover:text-[#0F172A] transition-colors py-5 whitespace-nowrap shrink-0"
-            >
-              Ofertas
-            </a>
-          </nav>
-
-          <div className="flex items-center shrink-0">
-            <button
-              type="button"
-              onClick={onLogout}
-              className="px-3 py-1.5 text-xs font-semibold text-[#475467] hover:text-[#0F172A] bg-[#F8FAFC] border border-slate-200 rounded-lg flex items-center gap-1.5 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-            >
-              <LogOut className="w-3.5 h-3.5" aria-hidden="true" />
-              <span>Cambiar perfil</span>
-            </button>
-          </div>
-        </div>
-      </header>
+      <AppHeader
+        role="alumno"
+        activeNavId="mi-beca"
+        onSelectNav={onSelectNav}
+        onLogout={onLogout}
+      />
 
       <main className="flex-1 max-w-[1200px] w-full mx-auto px-4 md:px-8 py-6 md:py-8">
         {/* Welcome Header */}

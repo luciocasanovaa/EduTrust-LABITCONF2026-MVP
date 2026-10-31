@@ -141,8 +141,18 @@ export interface DonationRecord {
   status: 'Acreditado' | 'Asignado a Bóveda';
 }
 
+export type ProfileSection = 'perfil' | 'ofertas';
+
 export interface NavigationResolution {
   nextScreen: ScreenId;
   transition: TransitionType;
-  profileInitialSection?: 'perfil' | 'ofertas';
+  profileInitialSection?: ProfileSection;
+}
+
+/** One tab of the single, always-visible header navigation of a role. */
+export interface RoleNavItem {
+  id: string;
+  label: string;
+  screen: ScreenId;
+  profileSection?: ProfileSection;
 }
