@@ -269,7 +269,7 @@ export default function App() {
           />
         )}
 
-        {activeRole === 'donador' && currentScreen === ScreenId.PanelAuditoria && (
+        {activeRole === 'patrocinador' && currentScreen === ScreenId.PanelAuditoria && (
           <PanelAuditoriaScreen
             milestones={auditMilestones}
             allocatedVaultUsdt={allocatedEngineeringUsdt}
@@ -279,7 +279,7 @@ export default function App() {
           />
         )}
 
-        {activeRole === 'donador' && currentScreen === ScreenId.BusquedaTalento && (
+        {activeRole === 'patrocinador' && currentScreen === ScreenId.BusquedaTalento && (
           <BusquedaTalentoScreen
             candidates={candidates}
             onToggleShortlist={(id) =>
@@ -297,7 +297,7 @@ export default function App() {
           />
         )}
 
-        {activeRole === 'donador' && currentScreen === ScreenId.RecepcionDonaciones && (
+        {activeRole === 'patrocinador' && currentScreen === ScreenId.RecepcionDonaciones && (
           <RecepcionDonacionesScreen
             donations={donations}
             allocatedEngineeringUsdt={allocatedEngineeringUsdt}

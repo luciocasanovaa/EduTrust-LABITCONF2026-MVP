@@ -121,12 +121,12 @@ test('strict role isolation restricts each profile to its own screens only', () 
   assert.equal(canRoleAccessScreen('alumno', ScreenId.RecepcionDonaciones), false);
   assert.equal(canRoleAccessScreen('alumno', ScreenId.PortalInstitucion), false);
 
-  // Donador only accesses donor/sponsor screens
-  assert.equal(canRoleAccessScreen('donador', ScreenId.RecepcionDonaciones), true);
-  assert.equal(canRoleAccessScreen('donador', ScreenId.PanelAuditoria), true);
-  assert.equal(canRoleAccessScreen('donador', ScreenId.BusquedaTalento), true);
-  assert.equal(canRoleAccessScreen('donador', ScreenId.MiBeca), false);
-  assert.equal(canRoleAccessScreen('donador', ScreenId.PortalInstitucion), false);
+  // Patrocinador only accesses donor/sponsor screens
+  assert.equal(canRoleAccessScreen('patrocinador', ScreenId.RecepcionDonaciones), true);
+  assert.equal(canRoleAccessScreen('patrocinador', ScreenId.PanelAuditoria), true);
+  assert.equal(canRoleAccessScreen('patrocinador', ScreenId.BusquedaTalento), true);
+  assert.equal(canRoleAccessScreen('patrocinador', ScreenId.MiBeca), false);
+  assert.equal(canRoleAccessScreen('patrocinador', ScreenId.PortalInstitucion), false);
 
   // Institucion ONLY accesses PortalInstitucion
   assert.equal(canRoleAccessScreen('institucion', ScreenId.PortalInstitucion), true);
@@ -146,7 +146,7 @@ test('URL search query resolves initial screen, role, and autostart cleanly', ()
     screen: ScreenId.PortalInstitucion,
   });
   assert.deepEqual(resolveInitialSessionFromSearch('?screen=panel-auditoria'), {
-    role: 'donador',
+    role: 'patrocinador',
     screen: ScreenId.PanelAuditoria,
   });
 });

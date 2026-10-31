@@ -2,7 +2,7 @@
 
 Plataforma fintech de becas universitarias con desembolsos verificados en dólares digitales (USDT), auditoría institucional, recepción de donaciones y portal de talento.
 
-La idea central: los donadores financian becas, y cada materia aprobada por el alumno (verificada por la institución con su acta) libera automáticamente la recompensa asociada. Todo queda registrado y auditable.
+La idea central: los patrocinadores financian becas, y cada materia aprobada por el alumno (verificada por la institución con su acta) libera automáticamente la recompensa asociada. Todo queda registrado y auditable.
 
 ## Roles y pantallas
 
@@ -11,10 +11,10 @@ El acceso se controla por rol (`src/utils/edutrustLogic.ts`, `ROLE_ALLOWED_SCREE
 | Rol | Pantallas |
 |-----|-----------|
 | **Alumno** | Mi Beca · Retirar a mi cuenta · Retiro completado · Perfil profesional y ofertas |
-| **Donador** | Recepción de donaciones · Panel de auditoría · Búsqueda de talento |
+| **Patrocinador** | Recepción de donaciones · Panel de auditoría · Búsqueda de talento |
 | **Institución** | Portal de institución (carga de notas y actas) |
 
-La pantalla de ingreso (`IngresoEstudiantes`) permite elegir el rol. También se puede entrar directo con `?role=alumno`, `?role=donador` o `?role=institucion` en la URL.
+La pantalla de ingreso (`IngresoEstudiantes`) permite elegir el rol. También se puede entrar directo con `?role=alumno`, `?role=patrocinador` o `?role=institucion` en la URL.
 
 ### Reglas de negocio principales
 
@@ -22,7 +22,7 @@ La pantalla de ingreso (`IngresoEstudiantes`) permite elegir el rol. También se
 - Validación de retiros contra el saldo disponible y cuentas bancarias registradas (ARS / USD).
 - Aprobación de hitos de desembolso desde el panel de auditoría.
 - Validación y registro de donaciones.
-- Filtro de candidatos por perfil para empresas/donadores.
+- Filtro de candidatos por perfil para empresas/patrocinadores.
 
 ## Stack
 

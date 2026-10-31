@@ -1,4 +1,4 @@
-export type UserRole = 'alumno' | 'donador' | 'institucion';
+export type UserRole = 'alumno' | 'patrocinador' | 'institucion';
 
 export enum ScreenId {
   IngresoEstudiantes = 'ingreso-estudiantes',

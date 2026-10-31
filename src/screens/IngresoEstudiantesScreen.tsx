@@ -44,8 +44,8 @@ export function IngresoEstudiantesScreen({
       setFormError(
         selectedRole === 'alumno'
           ? 'Ingresá tu número de legajo universitario (mínimo 4 caracteres).'
-          : selectedRole === 'donador'
-            ? 'Ingresá tu código de entidad donante o CUIT.'
+          : selectedRole === 'patrocinador'
+            ? 'Ingresá tu código de entidad patrocinadora o CUIT.'
             : 'Ingresá tu clave de secretaría académica habilitada.',
       );
       return;
@@ -90,12 +90,12 @@ export function IngresoEstudiantesScreen({
             </button>
             <button
               type="button"
-              onClick={() => handleRoleSwitch('donador')}
+              onClick={() => handleRoleSwitch('patrocinador')}
               className={`transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                selectedRole === 'donador' ? 'text-[#2B59FF] font-semibold' : 'hover:text-[#0F172A]'
+                selectedRole === 'patrocinador' ? 'text-[#2B59FF] font-semibold' : 'hover:text-[#0F172A]'
               }`}
             >
-              Perfil Donador
+              Perfil Patrocinador
             </button>
             <button
               type="button"
@@ -134,7 +134,7 @@ export function IngresoEstudiantesScreen({
                 Cada participante accede únicamente a su propio entorno operativo
               </h1>
               <p className="text-base text-[#475467] leading-relaxed max-w-xl mb-8">
-                Elegí el perfil con el que querés operar. Los accesos están estrictamente separados entre estudiantes becarios, entidades donadoras y secretarías académicas universitarias.
+                Elegí el perfil con el que querés operar. Los accesos están estrictamente separados entre estudiantes becarios, entidades patrocinadoras y secretarías académicas universitarias.
               </p>
 
               {/* 3 Interactive Profile Cards */}
@@ -159,9 +159,9 @@ export function IngresoEstudiantesScreen({
 
                 <button
                   type="button"
-                  onClick={() => handleRoleSwitch('donador')}
+                  onClick={() => handleRoleSwitch('patrocinador')}
                   className={`text-left p-5 rounded-2xl border transition-all cursor-pointer ${
-                    selectedRole === 'donador'
+                    selectedRole === 'patrocinador'
                       ? 'bg-white border-[#2B59FF] ring-2 ring-[#2B59FF]/15 shadow-sm'
                       : 'card-ambient hover:border-slate-300'
                   }`}
@@ -169,7 +169,7 @@ export function IngresoEstudiantesScreen({
                   <div className="w-9 h-9 rounded-lg bg-[#ECFDF3] text-[#12B76A] flex items-center justify-center mb-3">
                     <HeartHandshake className="w-5 h-5" aria-hidden="true" />
                   </div>
-                  <div className="text-sm font-bold text-[#0F172A]">2. Donador</div>
+                  <div className="text-sm font-bold text-[#0F172A]">2. Patrocinador</div>
                   <p className="text-xs text-[#475467] mt-1 leading-relaxed">
                     Aporta fondos a la bóveda, audita el destino del capital y conecta con talento becado.
                   </p>
@@ -219,7 +219,7 @@ export function IngresoEstudiantesScreen({
                 {(
                   [
                     { id: 'alumno', label: 'Alumno' },
-                    { id: 'donador', label: 'Donador' },
+                    { id: 'patrocinador', label: 'Patrocinador' },
                     { id: 'institucion', label: 'Institución' },
                   ] as const
                 ).map((tab) => (
@@ -288,7 +288,7 @@ export function IngresoEstudiantesScreen({
                 </>
               )}
 
-              {selectedRole === 'donador' && (
+              {selectedRole === 'patrocinador' && (
                 <>
                   <div className="flex items-center gap-3 mb-5">
                     <div className="w-10 h-10 rounded-xl bg-[#ECFDF3] text-[#12B76A] flex items-center justify-center shrink-0">
@@ -296,7 +296,7 @@ export function IngresoEstudiantesScreen({
                     </div>
                     <div>
                       <h2 className="text-xl font-semibold text-[#0F172A] tracking-tight">
-                        Ingreso de Donadores
+                        Ingreso de Patrocinadores
                       </h2>
                       <p className="text-xs text-[#475467]">
                         Acceso exclusivo a aportes, auditoría de fondos y talento
@@ -308,10 +308,10 @@ export function IngresoEstudiantesScreen({
                     <button
                       id="btn-donor-auth"
                       type="button"
-                      onClick={() => onLoginAsRole('donador')}
+                      onClick={() => onLoginAsRole('patrocinador')}
                       className="w-full h-12 px-4 rounded-[10px] bg-[#2B59FF] hover:bg-[#1E47E0] active:scale-[0.98] text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer whitespace-nowrap"
                     >
-                      <span>Ingresar como Entidad Donadora</span>
+                      <span>Ingresar como Entidad Patrocinadora</span>
                       <ArrowRight className="w-4 h-4" aria-hidden="true" />
                     </button>
                   </div>
@@ -365,8 +365,8 @@ export function IngresoEstudiantesScreen({
                   >
                     {selectedRole === 'alumno'
                       ? 'Correo universitario (.edu.ar / institucional)'
-                      : selectedRole === 'donador'
-                        ? 'Correo corporativo de la entidad aportante'
+                      : selectedRole === 'patrocinador'
+                        ? 'Correo corporativo de la entidad patrocinadora'
                         : 'Correo oficial de Secretaría Académica'}
                   </label>
                   <input
@@ -380,7 +380,7 @@ export function IngresoEstudiantesScreen({
                     placeholder={
                       selectedRole === 'alumno'
                         ? 'lfernandez@frba.utn.edu.ar'
-                        : selectedRole === 'donador'
+                        : selectedRole === 'patrocinador'
                           ? 'aportes@fundaciontechint.org'
                           : 'actas@frba.utn.edu.ar'
                     }
@@ -395,8 +395,8 @@ export function IngresoEstudiantesScreen({
                   >
                     {selectedRole === 'alumno'
                       ? 'Número de Legajo SIU'
-                      : selectedRole === 'donador'
-                        ? 'Código de Donador / CUIT'
+                      : selectedRole === 'patrocinador'
+                        ? 'Código de Patrocinador / CUIT'
                         : 'Código de Universidad Habilitada'}
                   </label>
                   <input
@@ -410,8 +410,8 @@ export function IngresoEstudiantesScreen({
                     placeholder={
                       selectedRole === 'alumno'
                         ? 'UTN-2023-18492'
-                        : selectedRole === 'donador'
-                          ? 'DON-ESG-2026'
+                        : selectedRole === 'patrocinador'
+                          ? 'PAT-ESG-2026'
                           : 'SIU-UTN-FRBA'
                     }
                     className="w-full h-12 px-3.5 rounded-lg border border-[#D0D5DD] bg-white text-sm text-[#0F172A] placeholder:text-[#98A2B3] focus:outline-none focus:border-[#2B59FF] focus:ring-4 focus:ring-[#2B59FF]/15 transition-all tnum"
@@ -441,7 +441,7 @@ export function IngresoEstudiantesScreen({
                 <span>
                   {selectedRole === 'alumno'
                     ? 'Solo verás tu billetera estudiantil, retiros bancarios y ofertas laborales.'
-                    : selectedRole === 'donador'
+                    : selectedRole === 'patrocinador'
                       ? 'Solo verás la bóveda de donaciones, trazabilidad del programa y talento becado.'
                       : 'Solo verás el módulo oficial para subir notas de materias y activar desembolsos.'}
                 </span>

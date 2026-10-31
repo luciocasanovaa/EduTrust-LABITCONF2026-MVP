@@ -77,7 +77,7 @@ export function RecepcionDonacionesScreen({
             <span className="w-7 h-7 rounded-lg bg-[#2B59FF] text-white flex items-center justify-center text-xs font-bold">
               ET
             </span>
-            <span>EduTrust Donadores</span>
+            <span>EduTrust Patrocinadores</span>
           </a>
 
           <nav

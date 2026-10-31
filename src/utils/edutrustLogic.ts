@@ -20,7 +20,7 @@ export const PASSING_GRADE = 6;
 
 export const ROLE_HOME_SCREEN: Record<UserRole, ScreenId> = {
   alumno: ScreenId.MiBeca,
-  donador: ScreenId.RecepcionDonaciones,
+  patrocinador: ScreenId.RecepcionDonaciones,
   institucion: ScreenId.PortalInstitucion,
 };
 
@@ -31,7 +31,7 @@ export const ROLE_ALLOWED_SCREENS: Record<UserRole, readonly ScreenId[]> = {
     ScreenId.RetiroCompletado,
     ScreenId.PerfilProfesional,
   ],
-  donador: [
+  patrocinador: [
     ScreenId.RecepcionDonaciones,
     ScreenId.PanelAuditoria,
     ScreenId.BusquedaTalento,
@@ -52,7 +52,7 @@ export function canRoleAccessScreen(
 export function inferRoleForScreen(screen: ScreenId): UserRole | null {
   if (screen === ScreenId.IngresoEstudiantes) return null;
   if (ROLE_ALLOWED_SCREENS.alumno.includes(screen)) return 'alumno';
-  if (ROLE_ALLOWED_SCREENS.donador.includes(screen)) return 'donador';
+  if (ROLE_ALLOWED_SCREENS.patrocinador.includes(screen)) return 'patrocinador';
   if (ROLE_ALLOWED_SCREENS.institucion.includes(screen)) return 'institucion';
   return null;
 }
@@ -65,7 +65,7 @@ export function resolveInitialSessionFromSearch(search: string): {
   const explicitRole = params.get('role');
   if (
     explicitRole === 'alumno' ||
-    explicitRole === 'donador' ||
+    explicitRole === 'patrocinador' ||
     explicitRole === 'institucion'
   ) {
     return {

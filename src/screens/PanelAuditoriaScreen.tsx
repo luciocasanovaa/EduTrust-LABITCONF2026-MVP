@@ -66,7 +66,7 @@ export function PanelAuditoriaScreen({
             <span className="w-7 h-7 rounded-lg bg-[#2B59FF] text-white flex items-center justify-center text-xs font-bold">
               ET
             </span>
-            <span>EduTrust Donadores</span>
+            <span>EduTrust Patrocinadores</span>
           </a>
 
           <nav
@@ -194,7 +194,7 @@ export function PanelAuditoriaScreen({
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
               <p className="text-xs font-medium text-[#475467]">
-                Transparencia para Donadores · Liberación condicionada a notas institucionales
+                Transparencia para Patrocinadores · Liberación condicionada a notas institucionales
               </p>
               <h1 className="text-2xl md:text-[28px] font-semibold text-[#0F172A] tracking-tight mt-0.5">
                 Panel de Auditoría — Programa Becas Ingeniería 2026
