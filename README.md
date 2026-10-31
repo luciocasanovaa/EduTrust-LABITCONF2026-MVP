@@ -30,7 +30,6 @@ La pantalla de ingreso (`IngresoEstudiantes`) permite elegir el rol. También se
 - Vite 8
 - Tailwind CSS 4
 - Motion (animaciones) y lucide-react (íconos)
-- `@google/genai` (integración con Gemini, opcional)
 
 ## Estructura
 
@@ -52,7 +51,6 @@ src/
 
 ```bash
 npm install
-cp .env.example .env.local   # completar GEMINI_API_KEY si se usa Gemini
 npm run dev                  # http://localhost:3000
 ```
 
@@ -77,12 +75,6 @@ npm run lint      # chequeo de tipos (tsc --noEmit)
 npx tsx --test src/utils/edutrustLogic.test.ts   # tests de lógica
 ```
 
-## Variables de entorno
-
-| Variable | Descripción |
-|----------|-------------|
-| `GEMINI_API_KEY` | API key de Gemini |
-| `APP_URL` | URL donde se hostea la app |
 
 ---
 
