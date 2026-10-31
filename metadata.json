@@ -1,6 +1,0 @@
-{
-  "name": "EduTrust Fintech",
-  "description": "Plataforma fintech de becas universitarias con desembolsos verificados en dólares digitales, auditoría institucional, recepción de donaciones y portal de talento.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

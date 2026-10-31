@@ -69,7 +69,7 @@ npx tsx --test src/utils/edutrustLogic.test.ts   # tests de lógica
 
 | Variable | Descripción |
 |----------|-------------|
-| `GEMINI_API_KEY` | API key de Gemini (inyectada automáticamente en AI Studio) |
+| `GEMINI_API_KEY` | API key de Gemini |
 | `APP_URL` | URL donde se hostea la app |
 
 ---
