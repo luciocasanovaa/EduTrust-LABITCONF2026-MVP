@@ -6,13 +6,98 @@ import {
   CourseRecord,
   DonationRecord,
   DonorCategory,
+  InstitutionEnrollment,
   NavigationResolution,
   ScreenId,
   StudentCandidate,
   TransactionRecord,
   TransitionType,
+  UserRole,
   WithdrawalReceipt,
 } from '../types/edutrust';
+
+export const PASSING_GRADE = 6;
+
+export const ROLE_HOME_SCREEN: Record<UserRole, ScreenId> = {
+  alumno: ScreenId.MiBeca,
+  donador: ScreenId.RecepcionDonaciones,
+  institucion: ScreenId.PortalInstitucion,
+};
+
+export const ROLE_ALLOWED_SCREENS: Record<UserRole, readonly ScreenId[]> = {
+  alumno: [
+    ScreenId.MiBeca,
+    ScreenId.RetirarAMiCuenta,
+    ScreenId.RetiroCompletado,
+    ScreenId.PerfilProfesional,
+  ],
+  donador: [
+    ScreenId.RecepcionDonaciones,
+    ScreenId.PanelAuditoria,
+    ScreenId.BusquedaTalento,
+  ],
+  institucion: [ScreenId.PortalInstitucion],
+};
+
+export function canRoleAccessScreen(
+  role: UserRole | null,
+  screen: ScreenId,
+): boolean {
+  if (role === null) {
+    return screen === ScreenId.IngresoEstudiantes;
+  }
+  return ROLE_ALLOWED_SCREENS[role].includes(screen);
+}
+
+export function inferRoleForScreen(screen: ScreenId): UserRole | null {
+  if (screen === ScreenId.IngresoEstudiantes) return null;
+  if (ROLE_ALLOWED_SCREENS.alumno.includes(screen)) return 'alumno';
+  if (ROLE_ALLOWED_SCREENS.donador.includes(screen)) return 'donador';
+  if (ROLE_ALLOWED_SCREENS.institucion.includes(screen)) return 'institucion';
+  return null;
+}
+
+export function resolveInitialSessionFromSearch(search: string): {
+  role: UserRole | null;
+  screen: ScreenId;
+} {
+  const params = new URLSearchParams(search);
+  const explicitRole = params.get('role');
+  if (
+    explicitRole === 'alumno' ||
+    explicitRole === 'donador' ||
+    explicitRole === 'institucion'
+  ) {
+    return {
+      role: explicitRole,
+      screen: ROLE_HOME_SCREEN[explicitRole],
+    };
+  }
+
+  const explicitScreen = params.get('screen');
+  if (
+    explicitScreen &&
+    Object.values(ScreenId).includes(explicitScreen as ScreenId)
+  ) {
+    const targetScreen = explicitScreen as ScreenId;
+    return {
+      role: inferRoleForScreen(targetScreen),
+      screen: targetScreen,
+    };
+  }
+
+  if (params.get('autostart') === '1') {
+    return {
+      role: 'alumno',
+      screen: ScreenId.MiBeca,
+    };
+  }
+
+  return {
+    role: null,
+    screen: ScreenId.IngresoEstudiantes,
+  };
+}
 
 export type NavigationTrigger =
   // Ingreso de Estudiantes
@@ -135,15 +220,7 @@ export function resolveNavigation(
 }
 
 export function resolveInitialScreenFromSearch(search: string): ScreenId {
-  const params = new URLSearchParams(search);
-  const explicitScreen = params.get('screen');
-  if (explicitScreen && Object.values(ScreenId).includes(explicitScreen as ScreenId)) {
-    return explicitScreen as ScreenId;
-  }
-  if (params.get('autostart') === '1') {
-    return ScreenId.MiBeca;
-  }
-  return ScreenId.IngresoEstudiantes;
+  return resolveInitialSessionFromSearch(search).screen;
 }
 
 export interface WithdrawalValidationResult {
@@ -300,7 +377,7 @@ export function calculateAcademicSummary(courses: CourseRecord[]): AcademicSumma
     } else if (c.status === 'Pendiente') {
       pendingCount += 1;
       pendingUsdt += c.rewardUsdt;
-    } else {
+    } else if (c.status === 'En Curso') {
       inProgressCount += 1;
       pendingUsdt += c.rewardUsdt;
     }
@@ -430,3 +507,182 @@ export function validateAndCreateDonation(
 
   return { valid: true, record };
 }
+
+export interface GradeUploadInput {
+  enrollmentId: string;
+  gradeRaw: string;
+  actaReferenceRaw: string;
+}
+
+export interface GradeUploadStateSnapshot {
+  enrollments: InstitutionEnrollment[];
+  courses: CourseRecord[];
+  wallet: WalletState;
+  milestones: AuditMilestone[];
+  disbursedTotalUsdt: number;
+  activeStudentLegajo: string;
+  timestampLabel?: string;
+}
+
+export type GradeUploadResult =
+  | {
+      valid: false;
+      error: string;
+    }
+  | {
+      valid: true;
+      passed: boolean;
+      releasedUsdt: number;
+      parsedGrade: number;
+      actaReference: string;
+      enrollment: InstitutionEnrollment;
+      nextEnrollments: InstitutionEnrollment[];
+      nextCourses: CourseRecord[];
+      nextWallet: WalletState;
+      nextMilestones: AuditMilestone[];
+      nextDisbursedTotalUsdt: number;
+    };
+
+/**
+ * Validates a grade uploaded by the Educational Institution and automatically
+ * triggers scholarship disbursement if the student passed (grade >= PASSING_GRADE).
+ */
+export function validateAndSubmitCourseGrade(
+  input: GradeUploadInput,
+  state: GradeUploadStateSnapshot,
+): GradeUploadResult {
+  const target = state.enrollments.find((e) => e.id === input.enrollmentId);
+  if (!target) {
+    return { valid: false, error: 'Seleccioná una cursada pendiente válida.' };
+  }
+  if (target.status !== 'Pendiente de Nota') {
+    return { valid: false, error: 'Esta materia ya tiene un acta definitiva registrada.' };
+  }
+
+  const cleanedGrade = input.gradeRaw.trim().replace(',', '.');
+  const parsedGrade = Number(cleanedGrade);
+  if (!cleanedGrade || !Number.isFinite(parsedGrade) || parsedGrade < 1 || parsedGrade > 10) {
+    return {
+      valid: false,
+      error: 'Ingresá una calificación numérica válida entre 1 y 10.',
+    };
+  }
+
+  const actaReference = input.actaReferenceRaw.trim().toUpperCase();
+  if (actaReference.length < 4) {
+    return {
+      valid: false,
+      error: 'Ingresá el número o código oficial de acta (ej. SIU-ACTA-90512).',
+    };
+  }
+
+  const normalizedGrade = Number(parsedGrade.toFixed(1));
+  const passed = normalizedGrade >= PASSING_GRADE;
+  const releasedUsdt = passed ? target.rewardUsdt : 0;
+  const dateLabel = state.timestampLabel ?? '30 Oct 2026';
+
+  const updatedEnrollment: InstitutionEnrollment = {
+    ...target,
+    grade: normalizedGrade,
+    actaReference,
+    status: passed ? 'Aprobada · Liberado' : 'Desaprobada · Sin Desembolso',
+    updatedAt: dateLabel,
+  };
+
+  const nextEnrollments = state.enrollments.map((e) =>
+    e.id === target.id ? updatedEnrollment : e,
+  );
+
+  // Sync Donor Audit Milestones ledger
+  const existingMilestone = state.milestones.find(
+    (m) => m.legajo === target.legajo && m.courseCode === target.courseCode,
+  );
+  let nextMilestones: AuditMilestone[];
+  if (existingMilestone) {
+    nextMilestones = state.milestones.map((m) =>
+      m.id === existingMilestone.id
+        ? {
+            ...m,
+            grade: normalizedGrade,
+            actaReference,
+            submittedAt: dateLabel,
+            status: passed ? ('Aprobada' as const) : ('En Revisión' as const),
+          }
+        : m,
+    );
+  } else if (passed) {
+    nextMilestones = [
+      {
+        id: `aud-inst-${target.id}`,
+        studentName: target.studentName,
+        legajo: target.legajo,
+        university: target.university,
+        courseCode: target.courseCode,
+        courseName: target.courseName,
+        grade: normalizedGrade,
+        amountUsdt: target.rewardUsdt,
+        actaReference,
+        submittedAt: dateLabel,
+        status: 'Aprobada',
+      },
+      ...state.milestones,
+    ];
+  } else {
+    nextMilestones = state.milestones;
+  }
+
+  const nextDisbursedTotalUsdt = Number(
+    (state.disbursedTotalUsdt + releasedUsdt).toFixed(2),
+  );
+
+  // Sync Student courses & wallet if this enrollment belongs to the active student
+  let nextCourses = state.courses;
+  let nextWallet = state.wallet;
+
+  if (target.legajo === state.activeStudentLegajo) {
+    nextCourses = state.courses.map((c) => {
+      if (c.code === target.courseCode || c.id === target.courseId) {
+        return {
+          ...c,
+          grade: normalizedGrade,
+          status: passed ? 'Aprobada' : 'Desaprobada',
+          verifiedDate: passed ? dateLabel : undefined,
+        };
+      }
+      return c;
+    });
+
+    if (passed && releasedUsdt > 0) {
+      const tx: TransactionRecord = {
+        id: `tx-inst-${target.id}-${state.wallet.transactions.length}`,
+        title: `Hito aprobado · ${target.courseCode} ${target.courseName}`,
+        subtitle: `Nota final: ${normalizedGrade}/10 · Acta ${actaReference} (${target.university})`,
+        date: `${dateLabel} · Liberación automática`,
+        amountUsdt: releasedUsdt,
+        direction: 'credit',
+        referenceCode: actaReference,
+        status: 'Completado',
+      };
+      nextWallet = {
+        ...state.wallet,
+        availableUsdt: Number((state.wallet.availableUsdt + releasedUsdt).toFixed(2)),
+        transactions: [tx, ...state.wallet.transactions],
+      };
+    }
+  }
+
+  return {
+    valid: true,
+    passed,
+    releasedUsdt,
+    parsedGrade: normalizedGrade,
+    actaReference,
+    enrollment: updatedEnrollment,
+    nextEnrollments,
+    nextCourses,
+    nextWallet,
+    nextMilestones,
+    nextDisbursedTotalUsdt,
+  };
+}
+

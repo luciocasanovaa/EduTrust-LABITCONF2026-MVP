@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   ArrowDownLeft,
   ArrowUpRight,
   BookOpenCheck,
   Building2,
-  CheckCircle2,
   Clock,
-  RefreshCw,
+  LogOut,
   Wallet,
 } from 'lucide-react';
 import { ARS_EXCHANGE_RATE } from '../data/seedData';
@@ -14,7 +13,6 @@ import {
   BankAccount,
   CourseRecord,
   CourseStatus,
-  ScreenId,
   TransactionRecord,
 } from '../types/edutrust';
 import {
@@ -32,8 +30,7 @@ interface MiBecaScreenProps {
   primaryAccount: BankAccount;
   onNavigateTrigger: (trigger: NavigationTrigger) => void;
   onQuickWithdrawConfirm: (amountUsdt: number) => void;
-  onSyncPendingCourse: (courseId: string) => void;
-  onDirectScreenSelect: (screen: ScreenId) => void;
+  onLogout: () => void;
 }
 
 export function MiBecaScreen({
@@ -46,12 +43,10 @@ export function MiBecaScreen({
   primaryAccount,
   onNavigateTrigger,
   onQuickWithdrawConfirm,
-  onSyncPendingCourse,
-  onDirectScreenSelect,
+  onLogout,
 }: MiBecaScreenProps) {
   const [courseFilter, setCourseFilter] = useState<'Todas' | CourseStatus>('Todas');
   const [quickAmount, setQuickAmount] = useState<number>(100);
-  const [syncFeedback, setSyncFeedback] = useState<string | null>(null);
 
   const summary = calculateAcademicSummary(courses);
   const localArsEquivalent = Math.round(availableUsdt * ARS_EXCHANGE_RATE);
@@ -67,13 +62,6 @@ export function MiBecaScreen({
     courseFilter === 'Todas'
       ? courses
       : courses.filter((c) => c.status === courseFilter);
-
-  const handleSyncClick = (course: CourseRecord) => {
-    onSyncPendingCourse(course.id);
-    setSyncFeedback(
-      `Acta verificada: ${course.code} (${course.name}) acreditó +$${course.rewardUsdt.toFixed(2)} USDT en tu billetera.`,
-    );
-  };
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex flex-col">
@@ -126,25 +114,16 @@ export function MiBecaScreen({
             >
               Ofertas
             </a>
-            <a
-              href="#panel-auditoria"
-              onClick={(e) => {
-                e.preventDefault();
-                onDirectScreenSelect(ScreenId.PanelAuditoria);
-              }}
-              className="hover:text-[#0F172A] transition-colors py-5 whitespace-nowrap shrink-0 text-[#64748B]"
-            >
-              Auditoría
-            </a>
           </nav>
 
           <div className="flex items-center shrink-0">
             <button
               type="button"
-              onClick={() => onDirectScreenSelect(ScreenId.IngresoEstudiantes)}
-              className="px-3 py-1.5 text-xs font-semibold text-[#475467] hover:text-[#0F172A] bg-[#F8FAFC] border border-slate-200 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              onClick={onLogout}
+              className="px-3 py-1.5 text-xs font-semibold text-[#475467] hover:text-[#0F172A] bg-[#F8FAFC] border border-slate-200 rounded-lg flex items-center gap-1.5 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
             >
-              Salir
+              <LogOut className="w-3.5 h-3.5" aria-hidden="true" />
+              <span>Cambiar perfil</span>
             </button>
           </div>
         </div>
@@ -155,7 +134,7 @@ export function MiBecaScreen({
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6">
           <div>
             <p className="text-xs font-medium text-[#475467]">
-              {cohort} · Beneficiaria activa
+              {cohort} · Perfil Alumno
             </p>
             <h1 className="text-2xl md:text-[28px] font-semibold text-[#0F172A] tracking-tight mt-0.5">
               Hola, {studentName.split(' ')[0]}
@@ -167,25 +146,6 @@ export function MiBecaScreen({
             <span>Materias aprobadas: <strong className="text-[#12B76A]">{summary.approvedCount}/{courses.length}</strong></span>
           </div>
         </div>
-
-        {syncFeedback && (
-          <div
-            role="status"
-            className="mb-6 px-4 py-3 rounded-xl bg-[#ECFDF3] border border-[#A6F4C5] text-[#027A48] text-sm font-medium flex items-center justify-between gap-4"
-          >
-            <span className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 shrink-0" aria-hidden="true" />
-              {syncFeedback}
-            </span>
-            <button
-              type="button"
-              onClick={() => setSyncFeedback(null)}
-              className="text-xs font-semibold underline cursor-pointer shrink-0"
-            >
-              Ocultar
-            </button>
-          </div>
-        )}
 
         {/* Top 2-Column Fintech Balance + Quick Express Withdrawal */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8 items-stretch">
@@ -338,7 +298,7 @@ export function MiBecaScreen({
                   Materias e hitos verificados
                 </h2>
                 <p className="text-xs text-[#475467]">
-                  Cada materia aprobada en SIU-Guaraní libera tu incentivo académico en USDT
+                  Tu institución educativa sube las notas oficiales para liberar automáticamente cada incentivo
                 </p>
               </div>
 
@@ -372,7 +332,9 @@ export function MiBecaScreen({
                     ? 'bg-[#ECFDF3] border-[#A6F4C5] text-[#027A48]'
                     : course.status === 'Pendiente'
                       ? 'bg-[#FEF0C7] border-[#FEDF89] text-[#B54708]'
-                      : 'bg-[#EFF4FF] border-[#C7D7FE] text-[#2B59FF]';
+                      : course.status === 'Desaprobada'
+                        ? 'bg-[#FFDAD6]/60 border-[#BA1A1A]/30 text-[#BA1A1A]'
+                        : 'bg-[#EFF4FF] border-[#C7D7FE] text-[#2B59FF]';
 
                 return (
                   <article
@@ -408,30 +370,27 @@ export function MiBecaScreen({
                       </div>
                     </div>
 
-                    <div className="flex sm:flex-col items-center sm:items-end justify-between gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                    <div className="flex sm:flex-col items-center sm:items-end justify-between gap-1 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
                       <div className="text-right tnum">
                         <span
                           className={`text-base font-bold ${
-                            course.status === 'Aprobada' ? 'text-[#12B76A]' : 'text-[#0F172A]'
+                            course.status === 'Aprobada'
+                              ? 'text-[#12B76A]'
+                              : course.status === 'Desaprobada'
+                                ? 'text-[#64748B] line-through'
+                                : 'text-[#0F172A]'
                           }`}
                         >
                           +${course.rewardUsdt.toFixed(2)} USDT
                         </span>
                         <span className="block text-[11px] text-[#64748B]">
-                          {course.verifiedDate ? `Acreditado ${course.verifiedDate}` : 'Incentivo por aprobación'}
+                          {course.status === 'Aprobada' && course.verifiedDate
+                            ? `Liberado ${course.verifiedDate}`
+                            : course.status === 'Desaprobada'
+                              ? 'Sin desembolso'
+                              : 'Aguarda nota de la institución'}
                         </span>
                       </div>
-
-                      {course.status === 'Pendiente' && (
-                        <button
-                          type="button"
-                          onClick={() => handleSyncClick(course)}
-                          className="px-3 py-1.5 rounded-lg bg-[#EFF4FF] hover:bg-[#DDE8FF] text-[#2B59FF] text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap"
-                        >
-                          <RefreshCw className="w-3.5 h-3.5" aria-hidden="true" />
-                          <span>Sincronizar acta SIU</span>
-                        </button>
-                      )}
                     </div>
                   </article>
                 );

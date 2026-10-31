@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   ArrowLeft,
   Bookmark,
   CheckCircle2,
   GraduationCap,
+  LogOut,
   Mail,
   Search,
 } from 'lucide-react';
-import { ScreenId, StudentCandidate } from '../types/edutrust';
+import { StudentCandidate } from '../types/edutrust';
 import { filterCandidates, NavigationTrigger } from '../utils/edutrustLogic';
 
 interface BusquedaTalentoScreenProps {
@@ -15,7 +16,7 @@ interface BusquedaTalentoScreenProps {
   onToggleShortlist: (candidateId: string) => void;
   onContactCandidate: (candidateId: string) => void;
   onNavigateTrigger: (trigger: NavigationTrigger) => void;
-  onDirectScreenSelect: (screen: ScreenId) => void;
+  onLogout: () => void;
 }
 
 export function BusquedaTalentoScreen({
@@ -23,7 +24,7 @@ export function BusquedaTalentoScreen({
   onToggleShortlist,
   onContactCandidate,
   onNavigateTrigger,
-  onDirectScreenSelect,
+  onLogout,
 }: BusquedaTalentoScreenProps) {
   const [query, setQuery] = useState('');
   const [major, setMajor] = useState('Todas');
@@ -96,10 +97,11 @@ export function BusquedaTalentoScreen({
           <div className="flex items-center shrink-0">
             <button
               type="button"
-              onClick={() => onDirectScreenSelect(ScreenId.MiBeca)}
-              className="px-3.5 py-2 rounded-lg bg-[#F8FAFC] hover:bg-slate-100 border border-slate-200 text-xs font-semibold text-[#0F172A] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              onClick={onLogout}
+              className="px-3.5 py-2 rounded-lg bg-[#F8FAFC] hover:bg-slate-100 border border-slate-200 text-xs font-semibold text-[#0F172A] flex items-center gap-1.5 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
             >
-              Portal Estudiante
+              <LogOut className="w-3.5 h-3.5 text-[#475467]" aria-hidden="true" />
+              <span>Cambiar perfil</span>
             </button>
           </div>
         </div>

@@ -5,12 +5,13 @@ import {
   CheckCircle2,
   ExternalLink,
   GraduationCap,
+  LogOut,
   MapPin,
   Plus,
   Search,
   Send,
 } from 'lucide-react';
-import { CourseRecord, JobOffer, ScreenId } from '../types/edutrust';
+import { CourseRecord, JobOffer } from '../types/edutrust';
 import { calculateAcademicSummary, NavigationTrigger } from '../utils/edutrustLogic';
 
 interface StudentProfileData {
@@ -37,7 +38,7 @@ interface PerfilOfertasScreenProps {
   onAddSkill: (skill: string) => void;
   onApplyOffer: (offerId: string) => void;
   onNavigateTrigger: (trigger: NavigationTrigger) => void;
-  onDirectScreenSelect: (screen: ScreenId) => void;
+  onLogout: () => void;
 }
 
 export function PerfilOfertasScreen({
@@ -49,7 +50,7 @@ export function PerfilOfertasScreen({
   onAddSkill,
   onApplyOffer,
   onNavigateTrigger,
-  onDirectScreenSelect,
+  onLogout,
 }: PerfilOfertasScreenProps) {
   const [activeTab, setActiveTab] = useState<'todo' | 'perfil' | 'ofertas'>(
     initialSection === 'ofertas' ? 'ofertas' : 'todo',
@@ -161,10 +162,11 @@ export function PerfilOfertasScreen({
           <div className="flex items-center shrink-0">
             <button
               type="button"
-              onClick={() => onDirectScreenSelect(ScreenId.BusquedaTalento)}
-              className="px-3 py-1.5 text-xs font-semibold text-[#0F172A] bg-[#F8FAFC] border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              onClick={onLogout}
+              className="px-3 py-1.5 text-xs font-semibold text-[#475467] hover:text-[#0F172A] bg-[#F8FAFC] border border-slate-200 rounded-lg flex items-center gap-1.5 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
             >
-              Vista Empresas
+              <LogOut className="w-3.5 h-3.5" aria-hidden="true" />
+              <span>Cambiar perfil</span>
             </button>
           </div>
         </div>

@@ -1,36 +1,33 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
-  CheckCircle2,
   Download,
   FileCheck2,
   Landmark,
+  LogOut,
   Search,
   ShieldCheck,
   Users,
 } from 'lucide-react';
-import { AuditMilestone, AuditStatus, ScreenId } from '../types/edutrust';
+import { AuditMilestone, AuditStatus } from '../types/edutrust';
 import { filterAuditMilestones, NavigationTrigger } from '../utils/edutrustLogic';
 
 interface PanelAuditoriaScreenProps {
   milestones: AuditMilestone[];
   allocatedVaultUsdt: number;
   disbursedTotalUsdt: number;
-  onApproveMilestone: (milestoneId: string) => void;
   onNavigateTrigger: (trigger: NavigationTrigger) => void;
-  onDirectScreenSelect: (screen: ScreenId) => void;
+  onLogout: () => void;
 }
 
 export function PanelAuditoriaScreen({
   milestones,
   allocatedVaultUsdt,
   disbursedTotalUsdt,
-  onApproveMilestone,
   onNavigateTrigger,
-  onDirectScreenSelect,
+  onLogout,
 }: PanelAuditoriaScreenProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'Todos' | AuditStatus>('Todos');
-  const [releaseToast, setReleaseToast] = useState<string | null>(null);
 
   const filtered = filterAuditMilestones(milestones, searchQuery, statusFilter);
   const approvedCount = milestones.filter((m) => m.status === 'Aprobada').length;
@@ -56,13 +53,6 @@ export function PanelAuditoriaScreen({
     URL.revokeObjectURL(url);
   };
 
-  const handleRelease = (item: AuditMilestone) => {
-    onApproveMilestone(item.id);
-    setReleaseToast(
-      `Desembolso liberado: $${item.amountUsdt.toFixed(2)} USDT acreditados a ${item.studentName} (${item.courseCode}).`,
-    );
-  };
-
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex flex-col">
       {/* Top Bar Contract with exact //nav//a[@data-path='beneficiary-students'] */}
@@ -76,12 +66,12 @@ export function PanelAuditoriaScreen({
             <span className="w-7 h-7 rounded-lg bg-[#2B59FF] text-white flex items-center justify-center text-xs font-bold">
               ET
             </span>
-            <span>EduTrust Institucional</span>
+            <span>EduTrust Donadores</span>
           </a>
 
           <nav
             aria-label="Navegación del panel de auditoría"
-            className="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm font-medium text-[#475467] overflow-x-auto"
+            className="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm font-medium text-[#475467]"
           >
             <a
               href="#auditoria"
@@ -102,26 +92,16 @@ export function PanelAuditoriaScreen({
             >
               Estudiantes Beneficiarios
             </a>
-            <a
-              href="#mi-beca"
-              onClick={(e) => {
-                e.preventDefault();
-                onDirectScreenSelect(ScreenId.MiBeca);
-              }}
-              className="hover:text-[#0F172A] transition-colors py-5 whitespace-nowrap shrink-0 text-[#64748B]"
-            >
-              Vista Becario
-            </a>
           </nav>
 
           <div className="flex items-center shrink-0">
             <button
               type="button"
-              onClick={handleExportCsv}
-              className="px-3.5 py-2 rounded-lg bg-[#0F172A] hover:bg-slate-800 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              onClick={onLogout}
+              className="px-3.5 py-2 rounded-lg bg-[#F8FAFC] hover:bg-slate-100 border border-slate-200 text-xs font-semibold text-[#0F172A] flex items-center gap-1.5 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
             >
-              <Download className="w-3.5 h-3.5" aria-hidden="true" />
-              <span>Exportar CSV</span>
+              <LogOut className="w-3.5 h-3.5 text-[#475467]" aria-hidden="true" />
+              <span>Cambiar perfil</span>
             </button>
           </div>
         </div>
@@ -211,33 +191,24 @@ export function PanelAuditoriaScreen({
 
         {/* Main Audit Console */}
         <main className="lg:col-span-9 space-y-6">
-          <div>
-            <p className="text-xs font-medium text-[#475467]">
-               Control Fiduciario y Verificación Académica
-            </p>
-            <h1 className="text-2xl md:text-[28px] font-semibold text-[#0F172A] tracking-tight mt-0.5">
-              Panel de Auditoría — Programa Becas Ingeniería 2026
-            </h1>
-          </div>
-
-          {releaseToast && (
-            <div
-              role="status"
-              className="px-4 py-3 rounded-xl bg-[#ECFDF3] border border-[#A6F4C5] text-[#027A48] text-sm font-medium flex items-center justify-between gap-4"
-            >
-              <span className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 shrink-0" aria-hidden="true" />
-                {releaseToast}
-              </span>
-              <button
-                type="button"
-                onClick={() => setReleaseToast(null)}
-                className="text-xs font-semibold underline cursor-pointer shrink-0"
-              >
-                Cerrar
-              </button>
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-medium text-[#475467]">
+                Transparencia para Donadores · Liberación condicionada a notas institucionales
+              </p>
+              <h1 className="text-2xl md:text-[28px] font-semibold text-[#0F172A] tracking-tight mt-0.5">
+                Panel de Auditoría — Programa Becas Ingeniería 2026
+              </h1>
             </div>
-          )}
+            <button
+              type="button"
+              onClick={handleExportCsv}
+              className="px-3.5 py-2 rounded-lg bg-[#0F172A] hover:bg-slate-800 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors whitespace-nowrap shrink-0 cursor-pointer self-start sm:self-auto"
+            >
+              <Download className="w-3.5 h-3.5" aria-hidden="true" />
+              <span>Exportar CSV</span>
+            </button>
+          </div>
 
           {/* 4-Column KPI Strip */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 tnum">
@@ -352,7 +323,7 @@ export function PanelAuditoriaScreen({
                       <th className="py-3 px-4 text-right">Calificación</th>
                       <th className="py-3 px-4 text-right">Incentivo</th>
                       <th className="py-3 px-4">Estado</th>
-                      <th className="py-3 px-4 text-right">Acción fiduciaria</th>
+                      <th className="py-3 px-4 text-right">Trazabilidad</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-xs sm:text-sm tnum">
@@ -400,15 +371,13 @@ export function PanelAuditoriaScreen({
                           </td>
                           <td className="py-3.5 px-4 text-right whitespace-nowrap">
                             {item.status === 'Aprobada' ? (
-                              <span className="text-xs text-[#64748B]">Desembolsado</span>
+                              <span className="text-xs font-medium text-[#027A48]">
+                                Liberado por acta
+                              </span>
                             ) : (
-                              <button
-                                type="button"
-                                onClick={() => handleRelease(item)}
-                                className="px-3 py-1.5 rounded-lg bg-[#12B76A] hover:bg-[#0E9F5A] text-white text-xs font-semibold transition-colors whitespace-nowrap cursor-pointer"
-                              >
-                                Liberar USDT
-                              </button>
+                              <span className="text-xs text-[#64748B]">
+                                Espera carga institucional
+                              </span>
                             )}
                           </td>
                         </tr>

@@ -6,6 +6,7 @@ import {
   INITIAL_CANDIDATES,
   INITIAL_COURSES,
   INITIAL_DONATIONS,
+  INITIAL_INSTITUTION_ENROLLMENTS,
   INITIAL_JOB_OFFERS,
   INITIAL_STUDENT_PROFILE,
   INITIAL_TRANSACTIONS,
@@ -15,22 +16,27 @@ import { IngresoEstudiantesScreen } from './screens/IngresoEstudiantesScreen';
 import { MiBecaScreen } from './screens/MiBecaScreen';
 import { PanelAuditoriaScreen } from './screens/PanelAuditoriaScreen';
 import { PerfilOfertasScreen } from './screens/PerfilOfertasScreen';
+import { PortalInstitucionScreen } from './screens/PortalInstitucionScreen';
 import { RecepcionDonacionesScreen } from './screens/RecepcionDonacionesScreen';
 import { RetirarCuentaScreen } from './screens/RetirarCuentaScreen';
 import { RetiroCompletadoScreen } from './screens/RetiroCompletadoScreen';
 import {
   BankAccount,
   DonationRecord,
+  InstitutionEnrollment,
   ScreenId,
   TransitionType,
+  UserRole,
   WithdrawalReceipt,
 } from './types/edutrust';
 import {
-  approveMilestoneDisbursement,
+  canRoleAccessScreen,
   executeWithdrawal,
   NavigationTrigger,
-  resolveInitialScreenFromSearch,
+  resolveInitialSessionFromSearch,
   resolveNavigation,
+  ROLE_HOME_SCREEN,
+  validateAndSubmitCourseGrade,
 } from './utils/edutrustLogic';
 
 function getTransitionClass(transition: TransitionType): string {
@@ -48,9 +54,10 @@ function getTransitionClass(transition: TransitionType): string {
 }
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<ScreenId>(() =>
-    resolveInitialScreenFromSearch(window.location.search),
-  );
+  const initialSession = resolveInitialSessionFromSearch(window.location.search);
+
+  const [activeRole, setActiveRole] = useState<UserRole | null>(initialSession.role);
+  const [currentScreen, setCurrentScreen] = useState<ScreenId>(initialSession.screen);
   const [transitionType, setTransitionType] = useState<TransitionType>(TransitionType.None);
   const [profileSection, setProfileSection] = useState<'perfil' | 'ofertas'>('perfil');
 
@@ -68,21 +75,50 @@ export default function App() {
   );
   const [jobOffers, setJobOffers] = useState(INITIAL_JOB_OFFERS);
 
-  // Institutional, Corporate & Treasury State
+  // Donor & University Institution State
   const [candidates, setCandidates] = useState(INITIAL_CANDIDATES);
   const [auditMilestones, setAuditMilestones] = useState(INITIAL_AUDIT_MILESTONES);
   const [disbursedTotalUsdt, setDisbursedTotalUsdt] = useState<number>(84350);
   const [allocatedEngineeringUsdt, setAllocatedEngineeringUsdt] = useState<number>(125000);
   const [donations, setDonations] = useState<DonationRecord[]>(INITIAL_DONATIONS);
+  const [enrollments, setEnrollments] = useState<InstitutionEnrollment[]>(
+    INITIAL_INSTITUTION_ENROLLMENTS,
+  );
 
   useEffect(() => {
     document.body.dataset.screen = currentScreen;
+    document.body.dataset.role = activeRole ?? 'none';
     window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
-  }, [currentScreen]);
+  }, [currentScreen, activeRole]);
+
+  const handleLoginAsRole = (role: UserRole) => {
+    setActiveRole(role);
+    setTransitionType(TransitionType.Push);
+    setCurrentScreen(ROLE_HOME_SCREEN[role]);
+  };
+
+  const handleLogout = () => {
+    setActiveRole(null);
+    setTransitionType(TransitionType.PushBack);
+    setCurrentScreen(ScreenId.IngresoEstudiantes);
+  };
 
   const handleNavigateTrigger = (trigger: NavigationTrigger) => {
     const resolution = resolveNavigation(currentScreen, trigger);
     if (!resolution) return;
+
+    // Login triggers from IngresoEstudiantes authenticate strictly as 'alumno'
+    const nextRole =
+      currentScreen === ScreenId.IngresoEstudiantes ? 'alumno' : activeRole;
+
+    if (!canRoleAccessScreen(nextRole, resolution.nextScreen)) {
+      return;
+    }
+
+    if (currentScreen === ScreenId.IngresoEstudiantes) {
+      setActiveRole('alumno');
+    }
+
     if (resolution.profileInitialSection) {
       setProfileSection(resolution.profileInitialSection);
     }
@@ -90,7 +126,8 @@ export default function App() {
     setCurrentScreen(resolution.nextScreen);
   };
 
-  const handleDirectScreenSelect = (nextScreen: ScreenId) => {
+  const handleRoleGuardedScreenSelect = (nextScreen: ScreenId) => {
+    if (!canRoleAccessScreen(activeRole, nextScreen)) return;
     setTransitionType(TransitionType.Push);
     setCurrentScreen(nextScreen);
   };
@@ -114,87 +151,41 @@ export default function App() {
     handleNavigateTrigger('btn-confirmar');
   };
 
-  // Synchronize a pending academic course in Mi beca
-  const handleSyncPendingCourse = (courseId: string) => {
-    const target = courses.find((c) => c.id === courseId);
-    if (!target || target.status === 'Aprobada') return;
-
-    setCourses((prev) =>
-      prev.map((c) =>
-        c.id === courseId
-          ? { ...c, status: 'Aprobada', verifiedDate: '30 Oct 2026' }
-          : c,
-      ),
+  // University Institution uploads official course grade -> automatically releases USDT on pass
+  const handleInstitutionSubmitGrade = (
+    enrollmentId: string,
+    gradeRaw: string,
+    actaReferenceRaw: string,
+  ) => {
+    const res = validateAndSubmitCourseGrade(
+      { enrollmentId, gradeRaw, actaReferenceRaw },
+      {
+        enrollments,
+        courses,
+        wallet,
+        milestones: auditMilestones,
+        disbursedTotalUsdt,
+        activeStudentLegajo: studentProfile.legajo,
+      },
     );
-    setWallet((prev) => ({
-      ...prev,
-      availableUsdt: Number((prev.availableUsdt + target.rewardUsdt).toFixed(2)),
-      transactions: [
-        {
-          id: `tx-sync-${Date.now()}`,
-          title: `Hito aprobado · ${target.code} ${target.name}`,
-          subtitle: `Nota final: ${target.grade ?? 9}/10 · Acta verificada SIU-Guaraní`,
-          date: '30 Oct 2026 · Ahora',
-          amountUsdt: target.rewardUsdt,
-          direction: 'credit',
-          referenceCode: `EDT-SIU-${100 + prev.transactions.length}`,
-          status: 'Completado',
-        },
-        ...prev.transactions,
-      ],
-    }));
 
-    // Keep audit milestone in sync if matching courseCode
-    setAuditMilestones((prev) =>
-      prev.map((m) =>
-        m.courseCode === target.code ? { ...m, status: 'Aprobada' } : m,
-      ),
-    );
-  };
-
-  // Approve milestone from Panel de Auditoría
-  const handleApproveAuditMilestone = (milestoneId: string) => {
-    const target = auditMilestones.find((m) => m.id === milestoneId);
-    const result = approveMilestoneDisbursement(
-      auditMilestones,
-      disbursedTotalUsdt,
-      milestoneId,
-    );
-    setAuditMilestones(result.milestones);
-    setDisbursedTotalUsdt(result.disbursedTotalUsdt);
-
-    // If the milestone belongs to our active student (Lucía), credit her course & wallet too
-    if (target && target.legajo === studentProfile.legajo && result.releasedAmount > 0) {
-      const matchingCourse = courses.find(
-        (c) => c.code === target.courseCode && c.status !== 'Aprobada',
-      );
-      if (matchingCourse) {
-        setCourses((prev) =>
-          prev.map((c) =>
-            c.id === matchingCourse.id
-              ? { ...c, status: 'Aprobada', verifiedDate: '30 Oct 2026' }
-              : c,
-          ),
-        );
-        setWallet((prev) => ({
-          ...prev,
-          availableUsdt: Number((prev.availableUsdt + result.releasedAmount).toFixed(2)),
-          transactions: [
-            {
-              id: `tx-aud-${Date.now()}`,
-              title: `Desembolso liberado · ${target.courseCode} ${target.courseName}`,
-              subtitle: `Auditoría Ingeniería 2026 · Acta ${target.actaReference}`,
-              date: '30 Oct 2026 · Ahora',
-              amountUsdt: result.releasedAmount,
-              direction: 'credit',
-              referenceCode: target.actaReference,
-              status: 'Completado',
-            },
-            ...prev.transactions,
-          ],
-        }));
-      }
+    if (!res.valid) {
+      return { valid: false, error: res.error };
     }
+
+    setEnrollments(res.nextEnrollments);
+    setCourses(res.nextCourses);
+    setWallet(res.nextWallet);
+    setAuditMilestones(res.nextMilestones);
+    setDisbursedTotalUsdt(res.nextDisbursedTotalUsdt);
+
+    return {
+      valid: true,
+      passed: res.passed,
+      releasedUsdt: res.releasedUsdt,
+      studentName: res.enrollment.studentName,
+      courseCode: res.enrollment.courseCode,
+    };
   };
 
   // Register new donation in Recepción y Donaciones
@@ -210,113 +201,120 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] overflow-x-hidden">
       <div key={currentScreen} className={transitionClass}>
-          {currentScreen === ScreenId.IngresoEstudiantes && (
-            <IngresoEstudiantesScreen
-              onNavigateTrigger={handleNavigateTrigger}
-              onDirectScreenSelect={handleDirectScreenSelect}
-            />
-          )}
+        {currentScreen === ScreenId.IngresoEstudiantes && (
+          <IngresoEstudiantesScreen
+            onNavigateTrigger={handleNavigateTrigger}
+            onLoginAsRole={handleLoginAsRole}
+          />
+        )}
 
-          {currentScreen === ScreenId.MiBeca && (
-            <MiBecaScreen
-              studentName={studentProfile.fullName}
-              cohort={studentProfile.cohort}
-              availableUsdt={wallet.availableUsdt}
-              totalWithdrawnUsdt={wallet.totalWithdrawnUsdt}
-              courses={courses}
-              transactions={wallet.transactions}
-              primaryAccount={bankAccounts[0]}
-              onNavigateTrigger={handleNavigateTrigger}
-              onQuickWithdrawConfirm={handleQuickWithdrawConfirm}
-              onSyncPendingCourse={handleSyncPendingCourse}
-              onDirectScreenSelect={handleDirectScreenSelect}
-            />
-          )}
+        {activeRole === 'alumno' && currentScreen === ScreenId.MiBeca && (
+          <MiBecaScreen
+            studentName={studentProfile.fullName}
+            cohort={studentProfile.cohort}
+            availableUsdt={wallet.availableUsdt}
+            totalWithdrawnUsdt={wallet.totalWithdrawnUsdt}
+            courses={courses}
+            transactions={wallet.transactions}
+            primaryAccount={bankAccounts[0]}
+            onNavigateTrigger={handleNavigateTrigger}
+            onQuickWithdrawConfirm={handleQuickWithdrawConfirm}
+            onLogout={handleLogout}
+          />
+        )}
 
-          {currentScreen === ScreenId.RetirarAMiCuenta && (
-            <RetirarCuentaScreen
-              availableUsdt={wallet.availableUsdt}
-              accounts={bankAccounts}
-              onAddAccount={(acc) => setBankAccounts((prev) => [...prev, acc])}
-              onConfirmWithdrawal={handleFullWithdrawConfirm}
-              onNavigateTrigger={handleNavigateTrigger}
-            />
-          )}
+        {activeRole === 'alumno' && currentScreen === ScreenId.RetirarAMiCuenta && (
+          <RetirarCuentaScreen
+            availableUsdt={wallet.availableUsdt}
+            accounts={bankAccounts}
+            onAddAccount={(acc) => setBankAccounts((prev) => [...prev, acc])}
+            onConfirmWithdrawal={handleFullWithdrawConfirm}
+            onNavigateTrigger={handleNavigateTrigger}
+          />
+        )}
 
-          {currentScreen === ScreenId.RetiroCompletado && (
-            <RetiroCompletadoScreen
-              receipt={latestReceipt}
-              remainingBalanceUsdt={wallet.availableUsdt}
-              onNavigateTrigger={handleNavigateTrigger}
-            />
-          )}
+        {activeRole === 'alumno' && currentScreen === ScreenId.RetiroCompletado && (
+          <RetiroCompletadoScreen
+            receipt={latestReceipt}
+            remainingBalanceUsdt={wallet.availableUsdt}
+            onNavigateTrigger={handleNavigateTrigger}
+          />
+        )}
 
-          {currentScreen === ScreenId.PerfilProfesional && (
-            <PerfilOfertasScreen
-              profile={studentProfile}
-              courses={courses}
-              offers={jobOffers}
-              initialSection={profileSection}
-              onToggleRecruiterVisible={() =>
-                setStudentProfile((prev) => ({
-                  ...prev,
-                  recruiterVisible: !prev.recruiterVisible,
-                }))
-              }
-              onAddSkill={(skill) =>
-                setStudentProfile((prev) => ({
-                  ...prev,
-                  skills: [...prev.skills, skill],
-                }))
-              }
-              onApplyOffer={(offerId) =>
-                setJobOffers((prev) =>
-                  prev.map((o) => (o.id === offerId ? { ...o, applied: true } : o)),
-                )
-              }
-              onNavigateTrigger={handleNavigateTrigger}
-              onDirectScreenSelect={handleDirectScreenSelect}
-            />
-          )}
+        {activeRole === 'alumno' && currentScreen === ScreenId.PerfilProfesional && (
+          <PerfilOfertasScreen
+            profile={studentProfile}
+            courses={courses}
+            offers={jobOffers}
+            initialSection={profileSection}
+            onToggleRecruiterVisible={() =>
+              setStudentProfile((prev) => ({
+                ...prev,
+                recruiterVisible: !prev.recruiterVisible,
+              }))
+            }
+            onAddSkill={(skill) =>
+              setStudentProfile((prev) => ({
+                ...prev,
+                skills: [...prev.skills, skill],
+              }))
+            }
+            onApplyOffer={(offerId) =>
+              setJobOffers((prev) =>
+                prev.map((o) => (o.id === offerId ? { ...o, applied: true } : o)),
+              )
+            }
+            onNavigateTrigger={handleNavigateTrigger}
+            onLogout={handleLogout}
+          />
+        )}
 
-          {currentScreen === ScreenId.PanelAuditoria && (
-            <PanelAuditoriaScreen
-              milestones={auditMilestones}
-              allocatedVaultUsdt={allocatedEngineeringUsdt}
-              disbursedTotalUsdt={disbursedTotalUsdt}
-              onApproveMilestone={handleApproveAuditMilestone}
-              onNavigateTrigger={handleNavigateTrigger}
-              onDirectScreenSelect={handleDirectScreenSelect}
-            />
-          )}
+        {activeRole === 'donador' && currentScreen === ScreenId.PanelAuditoria && (
+          <PanelAuditoriaScreen
+            milestones={auditMilestones}
+            allocatedVaultUsdt={allocatedEngineeringUsdt}
+            disbursedTotalUsdt={disbursedTotalUsdt}
+            onNavigateTrigger={handleNavigateTrigger}
+            onLogout={handleLogout}
+          />
+        )}
 
-          {currentScreen === ScreenId.BusquedaTalento && (
-            <BusquedaTalentoScreen
-              candidates={candidates}
-              onToggleShortlist={(id) =>
-                setCandidates((prev) =>
-                  prev.map((c) => (c.id === id ? { ...c, shortlisted: !c.shortlisted } : c)),
-                )
-              }
-              onContactCandidate={(id) =>
-                setCandidates((prev) =>
-                  prev.map((c) => (c.id === id ? { ...c, contacted: true } : c)),
-                )
-              }
-              onNavigateTrigger={handleNavigateTrigger}
-              onDirectScreenSelect={handleDirectScreenSelect}
-            />
-          )}
+        {activeRole === 'donador' && currentScreen === ScreenId.BusquedaTalento && (
+          <BusquedaTalentoScreen
+            candidates={candidates}
+            onToggleShortlist={(id) =>
+              setCandidates((prev) =>
+                prev.map((c) => (c.id === id ? { ...c, shortlisted: !c.shortlisted } : c)),
+              )
+            }
+            onContactCandidate={(id) =>
+              setCandidates((prev) =>
+                prev.map((c) => (c.id === id ? { ...c, contacted: true } : c)),
+              )
+            }
+            onNavigateTrigger={handleNavigateTrigger}
+            onLogout={handleLogout}
+          />
+        )}
 
-          {currentScreen === ScreenId.RecepcionDonaciones && (
-            <RecepcionDonacionesScreen
-              donations={donations}
-              allocatedEngineeringUsdt={allocatedEngineeringUsdt}
-              onRegisterDonation={handleRegisterDonation}
-              onNavigateTrigger={handleNavigateTrigger}
-              onDirectScreenSelect={handleDirectScreenSelect}
-            />
-          )}
+        {activeRole === 'donador' && currentScreen === ScreenId.RecepcionDonaciones && (
+          <RecepcionDonacionesScreen
+            donations={donations}
+            allocatedEngineeringUsdt={allocatedEngineeringUsdt}
+            onRegisterDonation={handleRegisterDonation}
+            onNavigateTrigger={handleNavigateTrigger}
+            onDonorScreenSelect={handleRoleGuardedScreenSelect}
+            onLogout={handleLogout}
+          />
+        )}
+
+        {activeRole === 'institucion' && currentScreen === ScreenId.PortalInstitucion && (
+          <PortalInstitucionScreen
+            enrollments={enrollments}
+            onSubmitGrade={handleInstitutionSubmitGrade}
+            onLogout={handleLogout}
+          />
+        )}
       </div>
     </div>
   );

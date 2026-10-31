@@ -4,6 +4,7 @@ import {
   CheckCircle2,
   FileSpreadsheet,
   Landmark,
+  LogOut,
   PlusCircle,
   ShieldCheck,
 } from 'lucide-react';
@@ -15,7 +16,8 @@ interface RecepcionDonacionesScreenProps {
   allocatedEngineeringUsdt: number;
   onRegisterDonation: (record: DonationRecord) => void;
   onNavigateTrigger: (trigger: NavigationTrigger) => void;
-  onDirectScreenSelect: (screen: ScreenId) => void;
+  onDonorScreenSelect: (screen: ScreenId) => void;
+  onLogout: () => void;
 }
 
 export function RecepcionDonacionesScreen({
@@ -23,7 +25,8 @@ export function RecepcionDonacionesScreen({
   allocatedEngineeringUsdt,
   onRegisterDonation,
   onNavigateTrigger,
-  onDirectScreenSelect,
+  onDonorScreenSelect,
+  onLogout,
 }: RecepcionDonacionesScreenProps) {
   const [donorName, setDonorName] = useState('');
   const [category, setCategory] = useState<DonorCategory>('Aporte Corporativo ESG');
@@ -74,12 +77,12 @@ export function RecepcionDonacionesScreen({
             <span className="w-7 h-7 rounded-lg bg-[#2B59FF] text-white flex items-center justify-center text-xs font-bold">
               ET
             </span>
-            <span>EduTrust Tesorería</span>
+            <span>EduTrust Donadores</span>
           </a>
 
           <nav
             aria-label="Navegación Entidad Receptora"
-            className="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm font-medium text-[#475467] overflow-x-auto"
+            className="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm font-medium text-[#475467]"
           >
             <a
               href="#recepcion"
@@ -104,21 +107,22 @@ export function RecepcionDonacionesScreen({
               href="#portal-empresas"
               onClick={(e) => {
                 e.preventDefault();
-                onDirectScreenSelect(ScreenId.BusquedaTalento);
+                onDonorScreenSelect(ScreenId.BusquedaTalento);
               }}
-              className="hover:text-[#0F172A] transition-colors py-5 whitespace-nowrap shrink-0 text-[#64748B]"
+              className="hover:text-[#0F172A] transition-colors py-5 whitespace-nowrap shrink-0"
             >
-              Portal Empresas
+              Talento Becado
             </a>
           </nav>
 
           <div className="flex items-center shrink-0">
             <button
               type="button"
-              onClick={() => onDirectScreenSelect(ScreenId.MiBeca)}
-              className="px-3.5 py-2 rounded-lg bg-[#F8FAFC] hover:bg-slate-100 border border-slate-200 text-xs font-semibold text-[#0F172A] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              onClick={onLogout}
+              className="px-3.5 py-2 rounded-lg bg-[#F8FAFC] hover:bg-slate-100 border border-slate-200 text-xs font-semibold text-[#0F172A] flex items-center gap-1.5 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
             >
-              Vista Becario
+              <LogOut className="w-3.5 h-3.5 text-[#475467]" aria-hidden="true" />
+              <span>Cambiar perfil</span>
             </button>
           </div>
         </div>

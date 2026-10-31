@@ -1,3 +1,5 @@
+export type UserRole = 'alumno' | 'donador' | 'institucion';
+
 export enum ScreenId {
   IngresoEstudiantes = 'ingreso-estudiantes',
   MiBeca = 'mi-beca',
@@ -7,6 +9,7 @@ export enum ScreenId {
   PerfilProfesional = 'perfil-profesional',
   BusquedaTalento = 'busqueda-talento',
   RecepcionDonaciones = 'recepcion-donaciones',
+  PortalInstitucion = 'portal-institucion',
 }
 
 export enum TransitionType {
@@ -16,7 +19,23 @@ export enum TransitionType {
   None = 'none',
 }
 
-export type CourseStatus = 'Aprobada' | 'Pendiente' | 'En Curso';
+export type CourseStatus = 'Aprobada' | 'Pendiente' | 'En Curso' | 'Desaprobada';
+
+export interface InstitutionEnrollment {
+  id: string;
+  studentName: string;
+  legajo: string;
+  university: string;
+  courseId?: string;
+  courseCode: string;
+  courseName: string;
+  semester: string;
+  rewardUsdt: number;
+  grade: number | null;
+  actaReference: string | null;
+  status: 'Pendiente de Nota' | 'Aprobada · Liberado' | 'Desaprobada · Sin Desembolso';
+  updatedAt: string;
+}
 
 export interface CourseRecord {
   id: string;
