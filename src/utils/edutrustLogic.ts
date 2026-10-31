@@ -36,6 +36,7 @@ export const ROLE_ALLOWED_SCREENS: Record<UserRole, readonly ScreenId[]> = {
     ScreenId.RecepcionDonaciones,
     ScreenId.PanelAuditoria,
     ScreenId.BusquedaTalento,
+    ScreenId.GraficosPatrocinador,
   ],
   institucion: [ScreenId.PortalInstitucion],
 };
@@ -64,6 +65,7 @@ export const ROLE_NAV_ITEMS: Record<UserRole, readonly RoleNavItem[]> = {
     { id: 'donaciones', label: 'Donaciones', screen: ScreenId.RecepcionDonaciones },
     { id: 'auditoria', label: 'Auditoría', screen: ScreenId.PanelAuditoria },
     { id: 'talento', label: 'Talento', screen: ScreenId.BusquedaTalento },
+    { id: 'graficos', label: 'Gráficos', screen: ScreenId.GraficosPatrocinador },
   ],
   institucion: [
     { id: 'carga-de-notas', label: 'Carga de notas', screen: ScreenId.PortalInstitucion },

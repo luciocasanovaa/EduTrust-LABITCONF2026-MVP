@@ -12,6 +12,7 @@ import {
   INITIAL_TRANSACTIONS,
 } from './data/seedData';
 import { BusquedaTalentoScreen } from './screens/BusquedaTalentoScreen';
+import { GraficosPatrocinadorScreen } from './screens/GraficosPatrocinadorScreen';
 import { IngresoEstudiantesScreen } from './screens/IngresoEstudiantesScreen';
 import { MiBecaScreen } from './screens/MiBecaScreen';
 import { PanelAuditoriaScreen } from './screens/PanelAuditoriaScreen';
@@ -207,7 +208,8 @@ export default function App() {
   const transitionClass = getTransitionClass(transitionType);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] overflow-x-hidden">
+    // overflow-x-clip (not hidden): hidden makes this a scroll container and breaks the sticky header
+    <div className="min-h-screen bg-[#F8FAFC] overflow-x-clip">
       <div key={currentScreen} className={transitionClass}>
         {currentScreen === ScreenId.IngresoEstudiantes && (
           <IngresoEstudiantesScreen
@@ -315,6 +317,18 @@ export default function App() {
             donations={donations}
             allocatedEngineeringUsdt={allocatedEngineeringUsdt}
             onRegisterDonation={handleRegisterDonation}
+            onSelectNav={handleSelectNav}
+            onLogout={handleLogout}
+          />
+        )}
+
+        {activeRole === 'patrocinador' && currentScreen === ScreenId.GraficosPatrocinador && (
+          <GraficosPatrocinadorScreen
+            donations={donations}
+            allocatedUsdt={allocatedEngineeringUsdt}
+            disbursedUsdt={disbursedTotalUsdt}
+            milestones={auditMilestones}
+            candidates={candidates}
             onSelectNav={handleSelectNav}
             onLogout={handleLogout}
           />

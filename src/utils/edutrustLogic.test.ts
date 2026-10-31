@@ -50,7 +50,7 @@ test('header tabs are consistent per role: unique, allowed, and reach every page
   }
   assert.deepEqual(
     ROLE_NAV_ITEMS.patrocinador.map((i) => i.label),
-    ['Donaciones', 'Auditoría', 'Talento'],
+    ['Donaciones', 'Auditoría', 'Talento', 'Gráficos'],
   );
   assert.deepEqual(
     ROLE_NAV_ITEMS.alumno.map((i) => i.label),

@@ -11,7 +11,7 @@ El acceso se controla por rol (`src/utils/edutrustLogic.ts`, `ROLE_ALLOWED_SCREE
 | Rol | Pantallas |
 |-----|-----------|
 | **Alumno** | Mi Beca · Retirar a mi cuenta · Retiro completado · Perfil profesional y ofertas |
-| **Patrocinador** | Recepción de donaciones · Panel de auditoría · Búsqueda de talento |
+| **Patrocinador** | Recepción de donaciones · Panel de auditoría · Búsqueda de talento · Gráficos de impacto |
 | **Institución** | Portal de institución (carga de notas y actas) |
 
 La pantalla de ingreso (`IngresoEstudiantes`) permite elegir el rol. También se puede entrar directo con `?role=alumno`, `?role=patrocinador` o `?role=institucion` en la URL.
@@ -23,6 +23,7 @@ La pantalla de ingreso (`IngresoEstudiantes`) permite elegir el rol. También se
 - Aprobación de hitos de desembolso desde el panel de auditoría.
 - Validación y registro de donaciones.
 - Filtro de candidatos por perfil para empresas/patrocinadores.
+- Gráficos de impacto para patrocinadores (uso del fondo, aportes en el tiempo y por entidad, actividad con talento, hitos de auditoría), calculados con los datos vivos de la plataforma y con vista de tabla equivalente.
 
 ## Stack
 
@@ -39,10 +40,15 @@ src/
 ├── main.tsx
 ├── data/seedData.ts     # Datos de ejemplo (alumno, materias, donaciones, ofertas...)
 ├── screens/             # Una pantalla por archivo
+├── components/
+│   ├── AppHeader.tsx    # Header único por rol (pestañas desde ROLE_NAV_ITEMS)
+│   └── charts/          # Gráficos SVG/HTML sin librerías (barras, apilada, área, tooltip)
 ├── types/edutrust.ts    # Tipos y enums del dominio
 └── utils/
-    ├── edutrustLogic.ts       # Lógica de negocio pura
-    └── edutrustLogic.test.ts  # Tests (node:test)
+    ├── edutrustLogic.ts           # Lógica de negocio pura
+    ├── edutrustLogic.test.ts      # Tests (node:test)
+    ├── sponsorAnalytics.ts        # Datos derivados para los gráficos del patrocinador
+    └── sponsorAnalytics.test.ts   # Tests (node:test)
 ```
 
 ## Cómo correrlo
@@ -72,7 +78,7 @@ Otros scripts:
 npm run build     # build de producción
 npm run preview   # sirve el build
 npm run lint      # chequeo de tipos (tsc --noEmit)
-npx tsx --test src/utils/edutrustLogic.test.ts   # tests de lógica
+npx tsx --test src/utils/edutrustLogic.test.ts src/utils/sponsorAnalytics.test.ts   # tests de lógica
 ```
 
 

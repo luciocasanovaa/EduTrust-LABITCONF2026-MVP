@@ -56,6 +56,25 @@
   background: linear-gradient(135deg, #2B59FF 0%, #1539C2 100%);
 }
 
+/*
+ * Chart tokens. Categorical slots 1-3 and the ordinal ramp were run through the
+ * dataviz palette validator (light surface). Marks use these roles, never raw hex.
+ */
+.viz-root {
+  --viz-surface: #FFFFFF;
+  --viz-ink: #0F172A;
+  --viz-ink-2: #475467;
+  --viz-ink-3: #64748B;
+  --viz-grid: #E2E8F0;
+  --viz-axis: #CBD5E1;
+  --viz-series-1: #2A78D6;
+  --viz-series-2: #EB6834;
+  --viz-series-3: #1BAF7A;
+  --viz-ordinal-1: #86B6EF;
+  --viz-ordinal-2: #2A78D6;
+  --viz-ordinal-3: #104281;
+}
+
 @keyframes edutrustPush {
   from {
     opacity: 0;

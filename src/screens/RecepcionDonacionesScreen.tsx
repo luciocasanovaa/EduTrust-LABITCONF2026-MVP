@@ -3,6 +3,7 @@ import { CheckCircle2, PlusCircle, ShieldCheck } from 'lucide-react';
 import { AppHeader } from '../components/AppHeader';
 import { DonationRecord, DonorCategory, RoleNavItem } from '../types/edutrust';
 import { validateAndCreateDonation } from '../utils/edutrustLogic';
+import { calculateCustodyUsdt } from '../utils/sponsorAnalytics';
 
 interface RecepcionDonacionesScreenProps {
   donations: DonationRecord[];
@@ -27,7 +28,7 @@ export function RecepcionDonacionesScreen({
   const [successBanner, setSuccessBanner] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<'Todas' | DonorCategory>('Todas');
 
-  const totalVaultCustody = donations.reduce((acc, d) => acc + d.amountUsdt, 87000);
+  const totalVaultCustody = calculateCustodyUsdt(donations);
   const unallocatedReserve = Math.max(0, totalVaultCustody - allocatedEngineeringUsdt);
 
   const visibleDonations =

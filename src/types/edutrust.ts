@@ -10,6 +10,7 @@ export enum ScreenId {
   BusquedaTalento = 'busqueda-talento',
   RecepcionDonaciones = 'recepcion-donaciones',
   PortalInstitucion = 'portal-institucion',
+  GraficosPatrocinador = 'graficos-patrocinador',
 }
 
 export enum TransitionType {
